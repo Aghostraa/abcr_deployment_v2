@@ -5,7 +5,21 @@ import GetInForm from '@/components/GetInForm'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 
-const sections = [
+interface Slide {
+  image: string;
+  description: string;
+}
+
+interface Section {
+  title: string;
+  slides: Slide[];
+}
+
+interface SectionSlideshowProps extends Section {
+  index: number;
+}
+
+const sections: Section[] = [
   {
     title: 'Learn',
     slides: [
@@ -15,11 +29,11 @@ const sections = [
       },
       {
         image: '/images/Learn/learn2.jpeg',
-        description: 'Learn about hackathon oppertunities and prepare yourself for the next one.'
+        description: 'Learn about hackathon opportunities and prepare yourself for the next one.'
       },
       {
         image: '/images/Learn/learn3.jpeg',
-        description: 'Join in Online discussions with differnt protocol builder across the whole space.'
+        description: 'Join in Online discussions with different protocol builders across the whole space.'
       },
       {
         image: '/images/Learn/learn4.jpeg',
@@ -36,7 +50,7 @@ const sections = [
       },
       {
         image: '/images/Build/build2.jpeg',
-        description: 'Join our team of hackers and participate for hackathons, tickets and acommodation on us!'
+        description: 'Join our team of hackers and participate for hackathons, tickets and accommodation on us!'
       }
     ]
   },
@@ -151,7 +165,7 @@ export default function Home() {
   )
 }
 
-function SectionSlideshow({ title, slides, index }) {
+function SectionSlideshow({ title, slides, index }: SectionSlideshowProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
