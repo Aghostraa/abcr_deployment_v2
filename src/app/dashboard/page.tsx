@@ -22,9 +22,12 @@ interface Task {
 
 interface ClubStats {
   total_users: number;
+  total_user_points: number;
   total_tasks: number;
-  total_points: number;
+  completed_tasks: number;
+  total_task_points: number;
   tasks_completed_this_month: number;
+  last_updated: string;
 }
 
 const data = [
@@ -74,12 +77,13 @@ const DashboardPage: React.FC = () => {
     if (error) {
       console.error('Error fetching club stats:', error);
     } else {
-      setClubStats(data);
+      setClubStats(data[0]);  // The function now returns a single row
     }
   };
 
   const handleTaskUpdate = () => {
     fetchRecentTasks();
+    fetchClubStats();  // Refresh stats when a task is updated
   };
 
   return (
@@ -110,7 +114,7 @@ const DashboardPage: React.FC = () => {
           <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Total Points</CardHeader>
-              <CardContent className="text-4xl font-bold">{clubStats?.total_points || 0}</CardContent>
+              <CardContent className="text-4xl font-bold">{(clubStats?.total_user_points || 0) + (clubStats?.total_task_points || 0)}</CardContent>
             </Card>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
