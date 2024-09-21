@@ -7,6 +7,14 @@ export async function middleware(req: NextRequest) {
   const supabase = createMiddlewareClient({ req, res })
   const { data: { session } } = await supabase.auth.getSession()
 
+  // Redirect unauthenticated users to login page
+  if (!session && !req.nextUrl.pathname.startsWith('/login')) {
+    const redirectUrl = req.nextUrl.clone()
+    redirectUrl.pathname = '/login'
+    redirectUrl.searchParams.set(`redirectedFrom`, req.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
+
   if (session) {
     const { data: { user } } = await supabase.auth.getUser()
     const role = user?.app_metadata?.role || 'Visitor'
@@ -21,18 +29,14 @@ export async function middleware(req: NextRequest) {
     if (req.nextUrl.pathname.startsWith('/member') && !['Admin', 'Manager', 'Member'].includes(role)) {
       return NextResponse.redirect(new URL('/unauthorized', req.url))
     }
-    if (req.nextUrl.pathname.startsWith('/tasks') || req.nextUrl.pathname.startsWith('/teams')) {
-      if (role === 'Visitor') {
-        return NextResponse.redirect(new URL('/unauthorized', req.url))
-      }
+    if ((req.nextUrl.pathname.startsWith('/tasks') || req.nextUrl.pathname.startsWith('/teams')) && role === 'Visitor') {
+      return NextResponse.redirect(new URL('/unauthorized', req.url))
     }
-  } else if (!req.nextUrl.pathname.startsWith('/login')) {
-    return NextResponse.redirect(new URL('/login', req.url))
   }
 
   return res
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/manager/:path*', '/member/:path*', '/tasks/:path*', '/teams/:path*', '/profile/:path*'],
+  matcher: ['/dashboard/:path*', '/admin/:path*', '/manager/:path*', '/member/:path*', '/tasks/:path*', '/teams/:path*', '/profile/:path*'],
 }

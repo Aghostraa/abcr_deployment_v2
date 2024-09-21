@@ -114,7 +114,7 @@ const TasksPage: React.FC = () => {
         {(user.role === 'Admin' || user.role === 'Manager') && (
           <motion.div
             className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6 mb-6"
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.00 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
             <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
@@ -126,7 +126,7 @@ const TasksPage: React.FC = () => {
 
         <motion.div
           className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.00 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
           <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">

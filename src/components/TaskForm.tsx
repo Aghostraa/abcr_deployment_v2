@@ -136,6 +136,35 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated }) => {
     }
   };
 
+  const datePickerCustomInput: React.FC<React.HTMLProps<HTMLInputElement>> = React.forwardRef(
+    ({ value, onClick }, ref: React.Ref<HTMLInputElement>) => (
+      <input
+        value={value as string}
+        onClick={onClick}
+        readOnly
+        ref={ref}
+        placeholder="Select Deadline"
+        className="input-field w-full cursor-pointer"
+      />
+    )
+  );
+
+  const CustomDatePickerInput = React.forwardRef<
+    HTMLInputElement,
+    React.ComponentProps<'input'>
+  >(({ value, onClick }, ref) => (
+    <input
+      value={value}
+      onClick={onClick}
+      readOnly
+      ref={ref}
+      placeholder="Select Deadline"
+      className="input-field w-full cursor-pointer"
+    />
+  ));
+
+  CustomDatePickerInput.displayName = 'CustomDatePickerInput';
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <input
@@ -155,31 +184,33 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated }) => {
         className="input-field w-full"
         required
       />
-      <select
-        name="project_id"
-        value={formData.project_id}
-        onChange={handleChange}
-        className="input-field w-full"
-        required
-      >
-        <option value="">Select Project</option>
-        {projects.map(project => (
-          <option key={project.id} value={project.id}>{project.name}</option>
-        ))}
-      </select>
-      <select
-        name="category_id"
-        value={formData.category_id}
-        onChange={handleChange}
-        className="input-field w-full"
-        required
-      >
-        <option value="">Select Category</option>
-        {categories.map(category => (
-          <option key={category.id} value={category.id}>{category.name}</option>
-        ))}
-      </select>
-      <div className="flex space-x-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <select
+          name="project_id"
+          value={formData.project_id}
+          onChange={handleChange}
+          className="input-field w-full"
+          required
+        >
+          <option value="">Select Project</option>
+          {projects.map(project => (
+            <option key={project.id} value={project.id}>{project.name}</option>
+          ))}
+        </select>
+        <select
+          name="category_id"
+          value={formData.category_id}
+          onChange={handleChange}
+          className="input-field w-full"
+          required
+        >
+          <option value="">Select Category</option>
+          {categories.map(category => (
+            <option key={category.id} value={category.id}>{category.name}</option>
+          ))}
+        </select>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <select
           name="urgency"
           value={formData.urgency}
@@ -211,17 +242,21 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated }) => {
           <option value="3">High Priority</option>
         </select>
       </div>
-      <DatePicker
-        selected={formData.deadline}
-        onChange={handleDateChange}
-        showTimeSelect
-        timeFormat="HH:mm"
-        timeIntervals={15}
-        timeCaption="time"
-        dateFormat="MMMM d, yyyy h:mm aa"
-        placeholderText="Select Deadline"
-        className="input-field w-full"
-      />
+      <div className="relative">
+        <DatePicker
+          selected={formData.deadline}
+          onChange={handleDateChange}
+          showTimeSelect
+          timeFormat="HH:mm"
+          timeIntervals={15}
+          timeCaption="time"
+          dateFormat="MMMM d, yyyy h:mm aa"
+          customInput={<CustomDatePickerInput />}
+          portalId="root-portal"
+          popperClassName="datepicker-popper"
+          popperPlacement="bottom-start"
+        />
+      </div>
       <button type="submit" className="btn-primary w-full">
         Create Task
       </button>

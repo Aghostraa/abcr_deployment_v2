@@ -11,6 +11,7 @@ interface User {
   email: string;
   role: string;
   last_login: string;
+  is_new: boolean;
 }
 
 const UsersPage: React.FC = () => {
@@ -21,6 +22,7 @@ const UsersPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('Member');
   const [message, setMessage] = useState('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const supabase = createClientComponentClient();
 
   useEffect(() => {
@@ -35,9 +37,18 @@ const UsersPage: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('id, email, role, last_login');
+        .select('id, email, role, last_login, created_at');
       if (error) throw error;
-      setUsers(data);
+      
+      const now = new Date();
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      const processedUsers: User[] = data.map(user => ({
+        ...user,
+        is_new: new Date(user.created_at) > oneWeekAgo
+      }));
+
+      setUsers(processedUsers);
     } catch (err) {
       setError('Failed to fetch users');
       console.error(err);
@@ -72,6 +83,16 @@ const UsersPage: React.FC = () => {
     }
   };
 
+  const toggleSortOrder = () => {
+    setSortOrder(prevOrder => prevOrder === 'asc' ? 'desc' : 'asc');
+  };
+
+  const sortedUsers = [...users].sort((a, b) => {
+    const dateA = new Date(a.last_login).getTime();
+    const dateB = new Date(b.last_login).getTime();
+    return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+  });
+
   if (userLoading) {
     return <DashboardLayout><div>Loading user data...</div></DashboardLayout>;
   }
@@ -94,7 +115,7 @@ const UsersPage: React.FC = () => {
 
         <motion.div
           className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6 mb-6"
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.0 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
           <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
@@ -126,26 +147,39 @@ const UsersPage: React.FC = () => {
 
         <motion.div
           className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.0 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
-            User List
-          </h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
+              User List
+            </h2>
+            <button
+              onClick={toggleSortOrder}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Sort by Last Login {sortOrder === 'asc' ? '↑' : '↓'}
+            </button>
+          </div>
           {loading ? (
             <p>Loading users...</p>
           ) : error ? (
             <p className="text-red-500">{error}</p>
           ) : (
             <ul className="space-y-4">
-              {users.map(user => (
+              {sortedUsers.map(user => (
                 <motion.li
                   key={user.id}
                   className="bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg rounded-lg p-4 shadow-md"
-                  whileHover={{ scale: 1.03, backgroundColor: "rgba(255,255,255,0.25)" }}
+                  whileHover={{ scale: 1.01, backgroundColor: "rgba(255,255,255,0.25)" }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <p>Email: {user.email}</p>
+                  <div className="flex justify-between items-center">
+                    <p>Email: {user.email}</p>
+                    {user.is_new && (
+                      <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">New</span>
+                    )}
+                  </div>
                   <p>Last Login: {new Date(user.last_login).toLocaleString()}</p>
                   <div className="mt-2">
                     <label htmlFor={`role-${user.id}`} className="mr-2">Role:</label>

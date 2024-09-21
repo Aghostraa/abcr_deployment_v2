@@ -2,8 +2,8 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Image from 'next/image'
-import { UserProvider } from '@/contexts/UserContext';
-
+import { UserProvider } from '@/contexts/UserContext'
+import { SidebarProvider } from '@/contexts/SidebarContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,12 +17,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-
   return (
     <html lang="en">
-      <UserProvider>
-        <body>{children}</body>
-      </UserProvider>
+      <body className={inter.className}>
+        <UserProvider>
+          <SidebarProvider>
+            {children}
+            <div id="root-portal" />
+          </SidebarProvider>
+        </UserProvider>
+      </body>
     </html>
   )
 }

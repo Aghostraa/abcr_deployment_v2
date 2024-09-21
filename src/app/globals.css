@@ -88,6 +88,15 @@ body {
   @apply opacity-100;
 }
 
+.datepicker-popper {
+  z-index: 9999 !important;
+}
+
+#root-portal {
+  position: relative;
+  z-index: 9999;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
