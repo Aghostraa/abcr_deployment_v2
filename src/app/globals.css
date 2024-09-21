@@ -25,35 +25,67 @@ body {
 }
 
 .btn-primary {
-  @apply px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105;
+  @apply px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-md hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105;
 }
 
 .btn-secondary {
-  @apply px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-all duration-300 transform hover:scale-105;
+  @apply px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105;
 }
 
 .input-field {
   @apply w-full px-4 py-3 mb-4 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-md text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
+
 /* Task Status Styles */
 .task-status {
-  @apply px-2 py-1 rounded-full text-sm font-semibold;
+  @apply px-2 py-1 rounded-full text-xs font-semibold;
 }
 
 .task-status-pending {
-  @apply bg-yellow-500 text-yellow-900;
+  @apply bg-gradient-to-r from-yellow-400 to-yellow-600 text-white;
 }
 
 .task-status-in-progress {
-  @apply bg-blue-500 text-blue-900;
+  @apply bg-gradient-to-r from-blue-400 to-blue-600 text-white;
 }
 
 .task-status-completed {
-  @apply bg-green-500 text-green-900;
+  @apply bg-gradient-to-r from-green-400 to-green-600 text-white;
 }
 
 .task-status-cancelled {
-  @apply bg-red-500 text-red-900;
+  @apply bg-gradient-to-r from-red-400 to-red-600 text-white;
+}
+
+/* Gradient Text */
+.gradient-text {
+  @apply bg-clip-text text-transparent;
+}
+
+.gradient-purple-pink {
+  @apply bg-gradient-to-r from-purple-400 to-pink-600;
+}
+
+.gradient-blue-teal {
+  @apply bg-gradient-to-r from-blue-400 to-teal-600;
+}
+
+.gradient-yellow-orange {
+  @apply bg-gradient-to-r from-yellow-400 to-orange-600;
+}
+
+/* Glossy Card Effect */
+.glossy-card {
+  @apply relative overflow-hidden;
+}
+
+.glossy-card::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-300 transform -skew-x-12;
+}
+
+.glossy-card:hover::before {
+  @apply opacity-100;
 }
 
 @layer utilities {
