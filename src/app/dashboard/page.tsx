@@ -93,20 +93,6 @@ const DashboardPage: React.FC = () => {
     fetchRecentTasks();
     fetchClubStats();  // Refresh stats when a task is updated
   };
-  
-  const fetchRecentTasks = async () => {
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    if (error) {
-      console.error('Error fetching tasks:', error);
-    } else {
-      setTasks(data || []);
-    }
-  };
 
   return (
     <DashboardLayout>
