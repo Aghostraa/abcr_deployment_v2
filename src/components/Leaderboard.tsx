@@ -37,7 +37,7 @@ const Leaderboard: React.FC = () => {
 
   const shortenEmail = (email: string) => {
     const [username, domain] = email.split('@');
-    return `${username.slice(0, 3)}...@${domain}`;
+    return `${username}`;
   };
 
   if (loading) return <div>Loading leaderboard...</div>;
