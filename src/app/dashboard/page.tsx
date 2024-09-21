@@ -136,17 +136,37 @@ const DashboardPage: React.FC = () => {
           </motion.div>
         )}
 
-        {user && user.role === 'Visitor' && (
-          <motion.div
-            className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
-              Welcome, Visitor!
-            </h2>
-            <p>To access more features, please contact an administrator to upgrade your role.</p>
-          </motion.div>
+        {(!user || user.role === 'Visitor') && (
+          <>
+            <motion.div
+              className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6 mb-6"
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
+                Welcome to ABC Blockchain Club!
+              </h2>
+              <p className="text-lg">
+                Explore our ongoing projects and recent tasks. Join us to participate in these exciting initiatives!
+              </p>
+            </motion.div>
+
+            <ProjectList />
+
+            <motion.div
+              className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6 mt-6"
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
+                Ready to Join?
+              </h2>
+              <p className="mb-4">
+                Become a member to access more features and contribute to our projects. Contact an administrator to upgrade your role and start your blockchain journey with us!
+              </p>
+              <button className="btn-primary">Contact Admin</button>
+            </motion.div>
+          </>
         )}
       </motion.div>
     </DashboardLayout>
