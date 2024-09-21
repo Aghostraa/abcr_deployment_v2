@@ -42,7 +42,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
       .from('tasks')
       .update({ assigned_user_id: userId, status: 'Awaiting Applicant Approval' })
       .eq('id', taskId);
-      alert('Task applied for');
+    alert('Task applied for');
     if (error) console.error('Error applying for task:', error);
     else onTaskUpdate();
   };
@@ -79,6 +79,23 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
     }
   };
 
+  const getStatusClassName = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'open':
+        return 'task-status task-status-pending';
+      case 'in progress':
+        return 'task-status task-status-in-progress';
+      case 'complete':
+        return 'task-status task-status-completed';
+      case 'awaiting applicant approval':
+        return 'task-status task-status-pending';
+      case 'awaiting completion approval':
+        return 'task-status task-status-in-progress';
+      default:
+        return 'task-status';
+    }
+  };
+
   if (loading) {
     return <div>Loading tasks...</div>;
   }
@@ -97,14 +114,16 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
           transition={{ type: "spring", stiffness: 300 }}
         >
           <h3 className="text-xl font-semibold">{task.name}</h3>
-          <p>{task.instructions}</p>
-          <p>Status: {task.status}</p>
-          <p>Points: {task.points}</p>
+          <p className="mt-2">{task.instructions}</p>
+          <div className="mt-2 flex justify-between items-center">
+            <span className={getStatusClassName(task.status)}>Status: {task.status}</span>
+            <span className="font-bold">Points: {task.points}</span>
+          </div>
           {(userRole === 'Member' || userRole === 'Manager' || userRole === 'Admin') && 
            task.status === 'Open' && !task.assigned_user_id && (
             <button 
               onClick={() => applyForTask(task.id)}
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200"
             >
               Apply
             </button>
@@ -112,7 +131,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
           {(userRole === 'Manager' || userRole === 'Admin') && task.status === 'Awaiting Applicant Approval' && (
             <button 
               onClick={() => approveApplication(task.id)}
-              className="mt-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              className="mt-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors duration-200"
             >
               Approve Application
             </button>
@@ -120,7 +139,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
           {task.assigned_user_id === userId && task.status === 'In Progress' && (
             <button 
               onClick={() => markTaskAsDone(task.id)}
-              className="mt-2 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+              className="mt-2 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors duration-200"
             >
               Mark as Done
             </button>
@@ -128,7 +147,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
           {(userRole === 'Manager' || userRole === 'Admin') && task.status === 'Awaiting Completion Approval' && (
             <button 
               onClick={() => approveTaskCompletion(task.id)}
-              className="mt-2 px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+              className="mt-2 px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors duration-200"
             >
               Approve Completion
             </button>
