@@ -12,14 +12,17 @@ interface Task {
   id: string;
   name: string;
   instructions: string;
-  project_id: string;
-  category_id: string;
   urgency: number;
-  priority: number;
   difficulty: number;
+  priority: number;
   points: number;
+  project_id: string;
   status: string;
   assigned_user_id: string | null;
+  created_by: string;
+  created_at: string;
+  deadline: string;
+  category_id: string;
 }
 
 interface Project {
