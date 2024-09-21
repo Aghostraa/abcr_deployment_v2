@@ -15,9 +15,17 @@ interface Task {
   id: string;
   name: string;
   instructions: string;
-  status: string;
+  urgency: number;
+  difficulty: number;
+  priority: number;
   points: number;
+  project_id: string;
+  status: string;
   assigned_user_id: string | null;
+  created_by: string;
+  created_at: string;
+  deadline: string;
+  category_id: string;
 }
 
 interface ClubStats {
@@ -84,6 +92,20 @@ const DashboardPage: React.FC = () => {
   const handleTaskUpdate = () => {
     fetchRecentTasks();
     fetchClubStats();  // Refresh stats when a task is updated
+  };
+  
+  const fetchRecentTasks = async () => {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (error) {
+      console.error('Error fetching tasks:', error);
+    } else {
+      setTasks(data || []);
+    }
   };
 
   return (
