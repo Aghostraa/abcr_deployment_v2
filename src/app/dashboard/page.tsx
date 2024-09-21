@@ -1,9 +1,8 @@
-'use client'
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { motion } from 'framer-motion';
 import TaskList from '@/components/TaskList';
+import Leaderboard from '@/components/Leaderboard';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
@@ -19,6 +18,13 @@ interface Task {
   assigned_user_id: string | null;
 }
 
+interface ClubStats {
+  total_users: number;
+  total_tasks: number;
+  total_points: number;
+  tasks_completed_this_month: number;
+}
+
 const data = [
   { name: 'Jan', tasks: 4 },
   { name: 'Feb', tasks: 3 },
@@ -31,17 +37,23 @@ const data = [
 const DashboardPage: React.FC = () => {
   const { user } = useUser();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [clubStats, setClubStats] = useState<ClubStats | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClientComponentClient();
 
   useEffect(() => {
     if (user) {
-      fetchRecentTasks();
+      fetchData();
     }
   }, [user]);
 
-  const fetchRecentTasks = async () => {
+  const fetchData = async () => {
     setLoading(true);
+    await Promise.all([fetchRecentTasks(), fetchClubStats()]);
+    setLoading(false);
+  };
+
+  const fetchRecentTasks = async () => {
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
@@ -53,7 +65,15 @@ const DashboardPage: React.FC = () => {
     } else {
       setTasks(data || []);
     }
-    setLoading(false);
+  };
+
+  const fetchClubStats = async () => {
+    const { data, error } = await supabase.rpc('get_club_stats');
+    if (error) {
+      console.error('Error fetching club stats:', error);
+    } else {
+      setClubStats(data);
+    }
   };
 
   const handleTaskUpdate = () => {
@@ -72,69 +92,68 @@ const DashboardPage: React.FC = () => {
           Dashboard
         </h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card>
+              <CardHeader>Total Users</CardHeader>
+              <CardContent className="text-4xl font-bold">{clubStats?.total_users || 0}</CardContent>
+            </Card>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Total Tasks</CardHeader>
-              <CardContent className="text-4xl font-bold">29</CardContent>
+              <CardContent className="text-4xl font-bold">{clubStats?.total_tasks || 0}</CardContent>
             </Card>
           </motion.div>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <Card>
-              <CardHeader>Completed Tasks</CardHeader>
-              <CardContent className="text-4xl font-bold">18</CardContent>
-            </Card>
-          </motion.div>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
+          <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Total Points</CardHeader>
-              <CardContent className="text-4xl font-bold">540</CardContent>
+              <CardContent className="text-4xl font-bold">{clubStats?.total_points || 0}</CardContent>
+            </Card>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card>
+              <CardHeader>Tasks Completed This Month</CardHeader>
+              <CardContent className="text-4xl font-bold">{clubStats?.tasks_completed_this_month || 0}</CardContent>
             </Card>
           </motion.div>
         </div>
 
-        {user && ['Admin', 'Manager', 'Member'].includes(user.role) && (
-          <motion.div
-            className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
-              Task Completion Trend
-            </h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="tasks" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
-          </motion.div>
-        )}
+        <Leaderboard />
 
         {user && ['Admin', 'Manager', 'Member'].includes(user.role) && (
-          <motion.div
-            className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
-              Recent Tasks
-            </h2>
-            <TaskList tasks={tasks} loading={loading} onTaskUpdate={handleTaskUpdate} />
-          </motion.div>
+          <>
+            <motion.div
+              className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
+                Task Completion Trend
+              </h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="tasks" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </motion.div>
+
+            <motion.div
+              className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
+                Recent Tasks
+              </h2>
+              <TaskList tasks={tasks} loading={loading} onTaskUpdate={handleTaskUpdate} />
+            </motion.div>
+          </>
         )}
 
         {(!user || user.role === 'Visitor') && (
