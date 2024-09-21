@@ -7,6 +7,7 @@ import TaskList from '@/components/TaskList';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import ProjectList from '@/components/ProjectList';
 import { useUser } from '@/contexts/UserContext';
 
 interface Task {
