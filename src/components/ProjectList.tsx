@@ -63,6 +63,21 @@ const ProjectList: React.FC = () => {
     }
   };
 
+  const getStatusClassName = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'task-status task-status-pending';
+      case 'in progress':
+        return 'task-status task-status-in-progress';
+      case 'completed':
+        return 'task-status task-status-completed';
+      case 'cancelled':
+        return 'task-status task-status-cancelled';
+      default:
+        return 'task-status';
+    }
+  };
+
   if (loading) {
     return <div>Loading projects...</div>;
   }
@@ -84,8 +99,9 @@ const ProjectList: React.FC = () => {
           {tasks[project.id]?.length > 0 ? (
             <ul className="space-y-2">
               {tasks[project.id].map((task) => (
-                <li key={task.id} className="bg-white bg-opacity-20 rounded p-2">
-                  {task.name} - Status: {task.status}
+                <li key={task.id} className="bg-white bg-opacity-20 rounded p-2 flex justify-between items-center">
+                  <span>{task.name}</span>
+                  <span className={getStatusClassName(task.status)}>{task.status}</span>
                 </li>
               ))}
             </ul>
