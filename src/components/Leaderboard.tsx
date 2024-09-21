@@ -4,10 +4,11 @@ import { motion } from 'framer-motion';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
 interface LeaderboardEntry {
-  email: string;
-  total_points: number;
-  monthly_points: number;
-}
+    email: string;
+    total_points: number;
+    monthly_points: number;
+    tasks_completed_this_month: number;
+  }
 
 const Leaderboard: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
@@ -58,6 +59,7 @@ const Leaderboard: React.FC = () => {
                 <th className="pb-2">User</th>
                 <th className="pb-2">Total Points</th>
                 <th className="pb-2">Monthly Points</th>
+                <th className="pb-2">Tasks This Month</th>
               </tr>
             </thead>
             <tbody>
@@ -73,6 +75,7 @@ const Leaderboard: React.FC = () => {
                   <td className="py-2">{shortenEmail(entry.email)}</td>
                   <td className="py-2">{entry.total_points}</td>
                   <td className="py-2">{entry.monthly_points}</td>
+                  <td className="py-2">{entry.tasks_completed_this_month}</td>
                 </motion.tr>
               ))}
             </tbody>
