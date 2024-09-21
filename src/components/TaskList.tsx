@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 interface Task {
   id: string;
@@ -119,6 +120,13 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
             <span className={getStatusClassName(task.status)}>Status: {task.status}</span>
             <span className="font-bold">Points: {task.points}</span>
           </div>
+          {task.assigned_user_id && (
+            <div className="mt-2">
+              <Link href={`/profile/${task.assigned_user_id}`} className="text-blue-400 hover:underline">
+                View Applicant Profile
+              </Link>
+            </div>
+          )}
           {(userRole === 'Member' || userRole === 'Manager' || userRole === 'Admin') && 
            task.status === 'Open' && !task.assigned_user_id && (
             <button 
