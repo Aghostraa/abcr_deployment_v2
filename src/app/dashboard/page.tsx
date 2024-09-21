@@ -127,7 +127,7 @@ const DashboardPage: React.FC = () => {
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
-              <CardHeader>Tasks Completed This Month</CardHeader>
+              <CardHeader>Monthly Completed Tasks</CardHeader>
               <CardContent className="text-4xl font-bold">{clubStats?.tasks_completed_this_month || 0}</CardContent>
             </Card>
           </motion.div>
