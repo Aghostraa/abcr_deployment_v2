@@ -71,7 +71,7 @@ const DashboardPage: React.FC = () => {
       .from('tasks')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(5);
+      .limit(12);
 
     if (error) {
       console.error('Error fetching tasks:', error);
@@ -107,39 +107,39 @@ const DashboardPage: React.FC = () => {
         </h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
+          <motion.div whileHover={{ scale: 1.0 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Total Users</CardHeader>
               <CardContent className="text-4xl font-bold">{clubStats?.total_users || 0}</CardContent>
             </Card>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
+          <motion.div whileHover={{ scale: 1.0 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Total Tasks</CardHeader>
               <CardContent className="text-4xl font-bold">{clubStats?.total_tasks || 0}</CardContent>
             </Card>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
+          <motion.div whileHover={{ scale: 1.0 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Total Points</CardHeader>
               <CardContent className="text-4xl font-bold">{(clubStats?.total_user_points || 0) + (clubStats?.total_task_points || 0)}</CardContent>
             </Card>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
+          <motion.div whileHover={{ scale: 1.0 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Monthly Completed</CardHeader>
               <CardContent className="text-4xl font-bold">{clubStats?.tasks_completed_this_month || 0}</CardContent>
             </Card>
           </motion.div>
         </div>
-
+  
         <Leaderboard />
-
+  
         {user && ['Admin', 'Manager', 'Member'].includes(user.role) && (
           <>
             <motion.div
               className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.0 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
@@ -156,10 +156,10 @@ const DashboardPage: React.FC = () => {
                 </BarChart>
               </ResponsiveContainer>
             </motion.div>
-
+  
             <motion.div
               className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.0 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
@@ -169,12 +169,12 @@ const DashboardPage: React.FC = () => {
             </motion.div>
           </>
         )}
-
+  
         {(!user || user.role === 'Visitor') && (
           <>
             <motion.div
               className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6 mb-6"
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.0 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
@@ -184,12 +184,12 @@ const DashboardPage: React.FC = () => {
                 Explore our ongoing projects and recent tasks. Join us to participate in these exciting initiatives!
               </p>
             </motion.div>
-
+  
             <ProjectList />
-
+  
             <motion.div
               className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6 mt-6"
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.0 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">

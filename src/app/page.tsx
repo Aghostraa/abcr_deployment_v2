@@ -4,6 +4,10 @@ import Image from 'next/image'
 import GetInForm from '@/components/GetInForm'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import UpcomingEventsSection from '@/components/UpcomingEventsSection'
+import KnowledgeHubSection from '@/components/KnowledgeHubSection'
+import SponsorsSection from '@/components/SponsorsSection'
+import TeamSection from '@/components/TeamSection'
 
 interface Slide {
   image: string;
@@ -75,7 +79,7 @@ const sections: Section[] = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 text-white">
+    <>
       <header className="container mx-auto px-4 py-6 flex justify-between items-center">
         <Image
           src="/images/abc-logo.png"
@@ -86,6 +90,10 @@ export default function Home() {
         />
         <nav>
           <a href="#about" className="mr-4 hover:text-blue-300 transition-colors">About</a>
+          <a href="#events" className="mr-4 hover:text-blue-300 transition-colors">Events</a>
+          <a href="#knowledge-hub" className="mr-4 hover:text-blue-300 transition-colors">Knowledge Hub</a>
+          <a href="#sponsors" className="mr-4 hover:text-blue-300 transition-colors">Sponsors</a>
+          <a href="#team" className="mr-4 hover:text-blue-300 transition-colors">Team</a>
           <a href="#get-in" className="hover:text-blue-300 transition-colors">Get In</a>
         </nav>
       </header>
@@ -142,6 +150,25 @@ export default function Home() {
           </div>
         </motion.section>
 
+        <section id="events">
+          <UpcomingEventsSection />
+        </section>
+
+        {/* Knowledge Hub Section */}
+        <section id="knowledge-hub">
+          <KnowledgeHubSection />
+        </section>
+
+        {/* Sponsors Section */}
+        <section id="sponsors">
+          <SponsorsSection />
+        </section>
+
+        {/* Team Section */}
+        <section id="team">
+          <TeamSection />
+        </section>
+
         <motion.section 
           id="get-in" 
           className="my-24"
@@ -157,11 +184,7 @@ export default function Home() {
           </div>
         </motion.section>
       </main>
-
-      <footer className="bg-black bg-opacity-50 text-center py-8">
-        <p>&copy; 2024 Aachen Blockchain Club. All rights reserved.</p>
-      </footer>
-    </div>
+    </>
   )
 }
 
