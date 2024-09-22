@@ -148,6 +148,23 @@ const DashboardPage: React.FC = () => {
     fetchEvents();
   };
 
+  const generateMailtoLink = () => {
+    const recipient = 'ahoura@aachen-blockchain.de';
+    const subject = encodeURIComponent('ABC Blockchain Club Membership Inquiry');
+    const body = encodeURIComponent(`Dear ABC Team,
+
+I'm interested in joining the ABC Blockchain Club. Here are my details:
+
+1. Are you already a Member? (Yes/No):
+2. If yes, what is your current club position?:
+3. Email address to be whitelisted:
+
+Best regards,
+[Your Name]`);
+
+    return `mailto:${recipient}?subject=${subject}&body=${body}`;
+  };
+
   if (loading) {
     return <Loading message="Loading Dashboard..." />;
   }
@@ -261,12 +278,14 @@ const DashboardPage: React.FC = () => {
               transition={{ type: "spring", stiffness: 300 }}
             >
               <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
-                Ready to Join?
+                Ready to Join? Or already a Member?
               </h2>
               <p className="mb-4">
                 Become a member to access more features and contribute to our projects. Contact an administrator to upgrade your role and start your blockchain journey with us!
               </p>
-              <button className="btn-primary">Contact Admin</button>
+              <a href={generateMailtoLink()} className="btn-primary inline-block">
+                Contact Admin
+              </a>
             </motion.div>
           </>
         )}
