@@ -7,6 +7,10 @@ export async function middleware(req: NextRequest) {
   const supabase = createMiddlewareClient({ req, res })
   const { data: { session } } = await supabase.auth.getSession()
 
+  if (req.nextUrl.pathname === '/impressum') {
+    return res
+  }
+
   // Redirect unauthenticated users to login page
   if (!session && !req.nextUrl.pathname.startsWith('/login')) {
     const redirectUrl = req.nextUrl.clone()
@@ -38,5 +42,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/admin/:path*', '/manager/:path*', '/member/:path*', '/tasks/:path*', '/teams/:path*', '/profile/:path*'],
+  matcher: ['/dashboard/:path*', '/admin/:path*', '/manager/:path*', '/member/:path*', '/tasks/:path*', '/teams/:path*', '/profile/:path*', '/impressum'],
 }

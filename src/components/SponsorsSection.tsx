@@ -5,9 +5,9 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 const sponsors = [
-  { name: 'Sponsor 1', logo: '/images/sponsor1.png' },
-  { name: 'Sponsor 2', logo: '/images/sponsor2.png' },
-  { name: 'Sponsor 3', logo: '/images/sponsor3.png' },
+  { name: 'Superteam Germany', logo: '/images/Sponsors/sponsor1.svg' },
+  { name: 'ICP HUB DeArk', logo: '/images/Sponsors/sponsor2.png' },
+  { name: 'Metabrew', logo: '/images/Sponsors/sponsor3.avif' },
   // Add more sponsors as needed
 ];
 
