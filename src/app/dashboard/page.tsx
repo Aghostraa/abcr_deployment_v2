@@ -5,11 +5,13 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { motion } from 'framer-motion';
 import TaskList from '@/components/TaskList';
 import Leaderboard from '@/components/Leaderboard';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import ProjectList from '@/components/ProjectList';
+import EventList from '@/components/EventList';
 import { useUser } from '@/contexts/UserContext';
+import WeeklyCheckinButton from '@/components/WeeklyCheckinButton';
+import Loading from '@/components/Loading';
 
 interface Task {
   id: string;
@@ -26,6 +28,24 @@ interface Task {
   created_at: string;
   deadline: string;
   category_id: string;
+  project_name: string;
+}
+
+interface Event {
+  id: string;
+  name: string;
+  description: string;
+  event_date: string;
+  attendees: string[];
+  status: 'upcoming' | 'past';
+}
+
+interface RecurringTask {
+  id: number;
+  name: string;
+  description: string;
+  type: 'check_in' | 'meeting_participation';
+  points: number;
 }
 
 interface ClubStats {
@@ -50,6 +70,8 @@ const data = [
 const DashboardPage: React.FC = () => {
   const { user } = useUser();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [recurringTasks, setRecurringTasks] = useState<RecurringTask[]>([]);
   const [clubStats, setClubStats] = useState<ClubStats | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClientComponentClient();
@@ -62,21 +84,24 @@ const DashboardPage: React.FC = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    await Promise.all([fetchRecentTasks(), fetchClubStats()]);
+    await Promise.all([fetchRecentTasks(), fetchClubStats(), fetchEvents(), fetchRecurringTasks()]);
     setLoading(false);
   };
 
   const fetchRecentTasks = async () => {
     const { data, error } = await supabase
       .from('tasks')
-      .select('*')
+      .select('*, projects(name)')
       .order('created_at', { ascending: false })
       .limit(12);
 
     if (error) {
       console.error('Error fetching tasks:', error);
     } else {
-      setTasks(data || []);
+      setTasks(data.map(task => ({
+        ...task,
+        project_name: task.projects.name
+      })));
     }
   };
 
@@ -85,14 +110,47 @@ const DashboardPage: React.FC = () => {
     if (error) {
       console.error('Error fetching club stats:', error);
     } else {
-      setClubStats(data[0]);  // The function now returns a single row
+      setClubStats(data[0]);
+    }
+  };
+
+  const fetchEvents = async () => {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .order('event_date', { ascending: true })
+      .limit(5);
+
+    if (error) {
+      console.error('Error fetching events:', error);
+    } else {
+      setEvents(data || []);
+    }
+  };
+
+  const fetchRecurringTasks = async () => {
+    const { data, error } = await supabase
+      .from('recurring_tasks')
+      .select('*');
+    if (error) {
+      console.error('Error fetching recurring tasks:', error);
+    } else {
+      setRecurringTasks(data as RecurringTask[] || []);
     }
   };
 
   const handleTaskUpdate = () => {
     fetchRecentTasks();
-    fetchClubStats();  // Refresh stats when a task is updated
+    fetchClubStats();
   };
+
+  const handleEventUpdate = () => {
+    fetchEvents();
+  };
+
+  if (loading) {
+    return <Loading message="Loading Dashboard..." />;
+  }
 
   return (
     <DashboardLayout>
@@ -105,27 +163,28 @@ const DashboardPage: React.FC = () => {
         <h1 className="text-4xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
           Dashboard
         </h1>
+        <WeeklyCheckinButton />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <motion.div whileHover={{ scale: 1.0 }} transition={{ type: "spring", stiffness: 300 }}>
+          <motion.div whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Total Users</CardHeader>
               <CardContent className="text-4xl font-bold">{clubStats?.total_users || 0}</CardContent>
             </Card>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.0 }} transition={{ type: "spring", stiffness: 300 }}>
+          <motion.div whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Total Tasks</CardHeader>
               <CardContent className="text-4xl font-bold">{clubStats?.total_tasks || 0}</CardContent>
             </Card>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.0 }} transition={{ type: "spring", stiffness: 300 }}>
+          <motion.div whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Total Points</CardHeader>
               <CardContent className="text-4xl font-bold">{(clubStats?.total_user_points || 0) + (clubStats?.total_task_points || 0)}</CardContent>
             </Card>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.0 }} transition={{ type: "spring", stiffness: 300 }}>
+          <motion.div whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Monthly Completed</CardHeader>
               <CardContent className="text-4xl font-bold">{clubStats?.tasks_completed_this_month || 0}</CardContent>
@@ -137,24 +196,17 @@ const DashboardPage: React.FC = () => {
   
         {user && ['Admin', 'Manager', 'Member'].includes(user.role) && (
           <>
+            <ProjectList defaultFilter="active" />
+  
             <motion.div
               className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
               whileHover={{ scale: 1.0 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
-                Task Completion Trend
+                Upcoming Events
               </h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="tasks" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
+              <EventList events={events} loading={loading} onEventUpdate={handleEventUpdate} />
             </motion.div>
   
             <motion.div
@@ -165,7 +217,12 @@ const DashboardPage: React.FC = () => {
               <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
                 Recent Tasks
               </h2>
-              <TaskList tasks={tasks} loading={loading} onTaskUpdate={handleTaskUpdate} />
+              <TaskList 
+                tasks={tasks} 
+                loading={loading} 
+                onTaskUpdate={handleTaskUpdate}
+                defaultFilterStatus="open"
+              />
             </motion.div>
           </>
         )}
@@ -174,7 +231,7 @@ const DashboardPage: React.FC = () => {
           <>
             <motion.div
               className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6 mb-6"
-              whileHover={{ scale: 1.0 }}
+              whileHover={{ scale: 1.01 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
@@ -185,11 +242,22 @@ const DashboardPage: React.FC = () => {
               </p>
             </motion.div>
   
-            <ProjectList />
+            <ProjectList defaultFilter="active" />
+
+            <motion.div
+              className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
+              whileHover={{ scale: 1.01 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
+                Upcoming Events
+              </h2>
+              <EventList events={events} loading={loading} onEventUpdate={handleEventUpdate} />
+            </motion.div>
   
             <motion.div
               className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6 mt-6"
-              whileHover={{ scale: 1.0 }}
+              whileHover={{ scale: 1.01 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">

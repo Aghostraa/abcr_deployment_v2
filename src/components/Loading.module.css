@@ -1,0 +1,47 @@
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(to bottom right, #4a0e8f, #1e0e3e, #0a2472);
+  }
+  
+  .skCubeGrid {
+    width: 40px;
+    height: 40px;
+    margin: 100px auto;
+  }
+  
+  .skCubeGrid .skCube {
+    width: 33%;
+    height: 33%;
+    background-color: #fff;
+    float: left;
+    animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out; 
+  }
+  
+  .skCubeGrid .skCube1 { animation-delay: 0.2s; }
+  .skCubeGrid .skCube2 { animation-delay: 0.3s; }
+  .skCubeGrid .skCube3 { animation-delay: 0.4s; }
+  .skCubeGrid .skCube4 { animation-delay: 0.1s; }
+  .skCubeGrid .skCube5 { animation-delay: 0.2s; }
+  .skCubeGrid .skCube6 { animation-delay: 0.3s; }
+  .skCubeGrid .skCube7 { animation-delay: 0s; }
+  .skCubeGrid .skCube8 { animation-delay: 0.1s; }
+  .skCubeGrid .skCube9 { animation-delay: 0.2s; }
+  
+  @keyframes sk-cubeGridScaleDelay {
+    0%, 70%, 100% {
+      transform: scale3D(1, 1, 1);
+    } 
+    35% {
+      transform: scale3D(0, 0, 1);
+    }
+  }
+  
+  .loadingMessage {
+    margin-top: 20px;
+    color: #fff;
+    font-size: 18px;
+  }

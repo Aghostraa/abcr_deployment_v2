@@ -5,7 +5,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@/contexts/UserContext';
 import { useSidebar } from '@/contexts/SidebarContext';
-import { Menu, X, Home, FileText, Rocket, Users, User, LogOut } from 'lucide-react';
+import { Menu, X, Home, FileText, Rocket, Users, User, LogOut, Calendar, RepeatIcon } from 'lucide-react';
 
 interface DashboardLayoutProps {
   children: React.ReactElement<{ userRole?: string }> | React.ReactElement<{ userRole?: string }>[];
@@ -74,7 +74,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <nav className="flex-grow mt-8">
                 <NavLink href="/dashboard" icon={<Home size={20} />}>Home</NavLink>
                 {['Admin', 'Manager', 'Member'].includes(user.role) && (
-                  <NavLink href="/dashboard/tasks" icon={<FileText size={20} />}>Tasks</NavLink>
+                  <>
+                    <NavLink href="/dashboard/tasks" icon={<FileText size={20} />}>Tasks</NavLink>
+                    <NavLink href="/dashboard/activities" icon={<Calendar size={20} />}>Activities</NavLink>
+                  </>
                 )}
                 {['Admin', 'Manager'].includes(user.role) && (
                   <NavLink href="/dashboard/projects" icon={<Rocket size={20} />}>Projects</NavLink>

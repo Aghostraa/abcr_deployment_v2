@@ -13,27 +13,35 @@ interface Task {
   assigned_user_id: string | null;
   created_at: string;
   deadline: string;
+  project_id: string;
+  project_name: string;
 }
 
 export interface TaskListProps {
   tasks: Task[];
   loading: boolean;
   onTaskUpdate: () => void;
+  projectId?: string;
+  defaultFilterStatus?: string;
 }
 
-type SortKey = 'name' | 'status' | 'points' | 'created_at' | 'deadline';
+type SortKey = 'name' | 'status' | 'points' | 'created_at' | 'deadline' | 'project_name';
 
-const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => {
+const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, projectId, defaultFilterStatus = '' }) => {
   const [userRole, setUserRole] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
   const [sortKey, setSortKey] = useState<SortKey>('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>(defaultFilterStatus);
   const supabase = createClientComponentClient();
 
   useEffect(() => {
     fetchUserInfo();
   }, []);
+
+  useEffect(() => {
+    setFilterStatus(defaultFilterStatus);
+  }, [defaultFilterStatus])
 
   const fetchUserInfo = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -46,14 +54,17 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
   };
 
   const applyForTask = async (taskId: string) => {
-    console.log(taskId, userId, userRole);
     const { error } = await supabase
       .from('tasks')
       .update({ assigned_user_id: userId, status: 'Awaiting Applicant Approval' })
       .eq('id', taskId);
-    alert('Task applied for');
-    if (error) console.error('Error applying for task:', error);
-    else onTaskUpdate();
+    if (error) {
+      console.error('Error applying for task:', error);
+      alert('Failed to apply for task. Please try again.');
+    } else {
+      alert('Task applied for successfully!');
+      onTaskUpdate();
+    }
   };
 
   const approveApplication = async (taskId: string) => {
@@ -61,8 +72,13 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
       .from('tasks')
       .update({ status: 'In Progress' })
       .eq('id', taskId);
-    if (error) console.error('Error approving application:', error);
-    else onTaskUpdate();
+    if (error) {
+      console.error('Error approving application:', error);
+      alert('Failed to approve application. Please try again.');
+    } else {
+      alert('Application approved successfully!');
+      onTaskUpdate();
+    }
   };
 
   const markTaskAsDone = async (taskId: string) => {
@@ -70,8 +86,13 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
       .from('tasks')
       .update({ status: 'Awaiting Completion Approval' })
       .eq('id', taskId);
-    if (error) console.error('Error marking task as done:', error);
-    else onTaskUpdate();
+    if (error) {
+      console.error('Error marking task as done:', error);
+      alert('Failed to mark task as done. Please try again.');
+    } else {
+      alert('Task marked as done successfully!');
+      onTaskUpdate();
+    }
   };
 
   const approveTaskCompletion = async (taskId: string) => {
@@ -91,12 +112,13 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
   const sortedAndFilteredTasks = useMemo(() => {
     return tasks
       .filter(task => filterStatus ? task.status.toLowerCase() === filterStatus.toLowerCase() : true)
+      .filter(task => projectId ? task.project_id === projectId : true)
       .sort((a, b) => {
         if (a[sortKey] < b[sortKey]) return sortDirection === 'asc' ? -1 : 1;
         if (a[sortKey] > b[sortKey]) return sortDirection === 'asc' ? 1 : -1;
         return 0;
       });
-  }, [tasks, sortKey, sortDirection, filterStatus]);
+  }, [tasks, sortKey, sortDirection, filterStatus, projectId]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -123,7 +145,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
     return <div className="text-center py-4">Loading tasks...</div>;
   }
 
-  if (tasks.length === 0) {
+  if (sortedAndFilteredTasks.length === 0) {
     return <div className="text-center py-4">No tasks available.</div>;
   }
 
@@ -143,6 +165,11 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
           <button onClick={() => handleSort('deadline')} className="px-2 py-1 bg-red-600 text-white rounded-md text-sm">
             Deadline {sortKey === 'deadline' && (sortDirection === 'asc' ? <ChevronUp className="inline" /> : <ChevronDown className="inline" />)}
           </button>
+          {!projectId && (
+            <button onClick={() => handleSort('project_name')} className="px-2 py-1 bg-green-600 text-white rounded-md text-sm">
+              Project {sortKey === 'project_name' && (sortDirection === 'asc' ? <ChevronUp className="inline" /> : <ChevronDown className="inline" />)}
+            </button>
+          )}
         </div>
         <select
           value={filterStatus}
@@ -150,11 +177,11 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
           className="px-2 py-1 bg-gray-700 text-white rounded-md text-sm"
         >
           <option value="">All Statuses</option>
-          <option value="Open">Open</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Complete">Complete</option>
-          <option value="Awaiting Applicant Approval">Awaiting Applicant Approval</option>
-          <option value="Awaiting Completion Approval">Awaiting Completion Approval</option>
+          <option value="open">Open</option>
+          <option value="in progress">In Progress</option>
+          <option value="complete">Complete</option>
+          <option value="awaiting applicant approval">Awaiting Applicant Approval</option>
+          <option value="awaiting completion approval">Awaiting Completion Approval</option>
         </select>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -166,6 +193,9 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate }) => 
             transition={{ type: "spring", stiffness: 300 }}
           >
             <h3 className="text-lg font-bold mb-2 text-purple-300">{task.name}</h3>
+            {!projectId && (
+              <p className="text-sm text-blue-300 mb-2">Project: {task.project_name}</p>
+            )}
             <p className="text-sm text-gray-300 mb-2 line-clamp-2">{task.instructions}</p>
             <div className="flex justify-between items-center mb-2">
               <span className={getStatusClassName(task.status)}>{task.status}</span>

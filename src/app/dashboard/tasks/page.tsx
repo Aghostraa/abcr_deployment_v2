@@ -23,6 +23,7 @@ interface Task {
   created_at: string;
   deadline: string;
   category_id: string;
+  project_name: string;
 }
 
 interface Project {
