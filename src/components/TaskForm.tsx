@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useUser } from '@/contexts/UserContext';
 import DatePicker from 'react-datepicker';
@@ -62,28 +62,28 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const supabase = createClientComponentClient();
 
-  useEffect(() => {
-    fetchProjects();
-    fetchCategories();
-  }, []);
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     const { data, error } = await supabase.from('projects').select('id, name');
     if (error) {
       console.error('Error fetching projects:', error);
     } else {
       setProjects(data || []);
     }
-  };
+  }, [supabase]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     const { data, error } = await supabase.from('categories').select('id, name');
     if (error) {
       console.error('Error fetching categories:', error);
     } else {
       setCategories(data || []);
     }
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchProjects();
+    fetchCategories();
+  }, [fetchProjects, fetchCategories]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
