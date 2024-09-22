@@ -136,19 +136,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated }) => {
     }
   };
 
-  const datePickerCustomInput: React.FC<React.HTMLProps<HTMLInputElement>> = React.forwardRef(
-    ({ value, onClick }, ref: React.Ref<HTMLInputElement>) => (
-      <input
-        value={value as string}
-        onClick={onClick}
-        readOnly
-        ref={ref}
-        placeholder="Select Deadline"
-        className="input-field w-full cursor-pointer"
-      />
-    )
-  );
-
   const CustomDatePickerInput = React.forwardRef<
     HTMLInputElement,
     React.ComponentProps<'input'>
@@ -263,5 +250,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated }) => {
     </form>
   );
 };
+
+TaskForm.displayName = 'TaskForm';
 
 export default TaskForm;
