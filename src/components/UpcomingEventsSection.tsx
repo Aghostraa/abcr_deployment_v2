@@ -11,7 +11,7 @@ const UpcomingEventsSection: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="my-24"
     >
-      <h2 className="text-3xl font-bold mb-8 text-center gradient-text gradient-blue-teal">Recent Events</h2>
+      <h2 className="text-3xl font-bold mb-8 text-center gradient-text gradient-blue-teal">Featured Events</h2>
       <div className="glass-panel p-6 rounded-lg shadow-lg">
         {/* Luma embed example */}
         <div className="luma-embed" style={{height: '500px', width: '100%'}}>
@@ -24,8 +24,7 @@ const UpcomingEventsSection: React.FC = () => {
             allowFullScreen
           ></iframe>
         </div>
-        {/* You can add more event manager embeds here */}
-      </div>
+       </div>
     </motion.section>
   );
 };

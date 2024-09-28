@@ -37,7 +37,9 @@ interface Event {
   description: string;
   event_date: string;
   attendees: string[];
-  status: 'upcoming' | 'past';
+  status: 'upcoming' | 'ongoing' | 'past';
+  event_link: string;
+  event_type: 'Internal' | 'Public';
 }
 
 interface RecurringTask {
@@ -75,16 +77,19 @@ const DashboardPage: React.FC = () => {
   const [clubStats, setClubStats] = useState<ClubStats | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClientComponentClient();
-
+  
   useEffect(() => {
-    if (user) {
-      fetchData();
-    }
+    fetchData();
   }, [user]);
 
   const fetchData = async () => {
     setLoading(true);
-    await Promise.all([fetchRecentTasks(), fetchClubStats(), fetchEvents(), fetchRecurringTasks()]);
+    await Promise.all([
+      fetchClubStats(), 
+      fetchEvents(), 
+      fetchRecurringTasks(),
+      user && ['Admin', 'Manager', 'Member'].includes(user.role) ? fetchRecentTasks() : Promise.resolve()
+    ]);
     setLoading(false);
   };
 
