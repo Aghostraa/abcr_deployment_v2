@@ -17,18 +17,18 @@ interface Task {
   id: string;
   name: string;
   instructions: string;
+  status: string;
+  points: number;
+  assigned_user_id: string | null;
+  created_at: string;
+  deadline: string;
+  project_id: string;
+  project_name: string;
   urgency: number;
   difficulty: number;
   priority: number;
-  points: number;
-  project_id: string;
-  status: string;
-  assigned_user_id: string | null;
-  created_by: string;
-  created_at: string;
-  deadline: string;
   category_id: string;
-  project_name: string;
+  category_name: string;
 }
 
 interface Event {
@@ -37,7 +37,9 @@ interface Event {
   description: string;
   event_date: string;
   attendees: string[];
-  status: 'upcoming' | 'past';
+  status: 'upcoming' | 'ongoing' | 'past';
+  event_link: string;
+  event_type: 'Internal' | 'Public';
 }
 
 interface RecurringTask {
@@ -75,16 +77,19 @@ const DashboardPage: React.FC = () => {
   const [clubStats, setClubStats] = useState<ClubStats | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClientComponentClient();
-
+  
   useEffect(() => {
-    if (user) {
-      fetchData();
-    }
+    fetchData();
   }, [user]);
 
   const fetchData = async () => {
     setLoading(true);
-    await Promise.all([fetchRecentTasks(), fetchClubStats(), fetchEvents(), fetchRecurringTasks()]);
+    await Promise.all([
+      fetchClubStats(), 
+      fetchEvents(), 
+      fetchRecurringTasks(),
+      user && ['Admin', 'Manager', 'Member'].includes(user.role) ? fetchRecentTasks() : Promise.resolve()
+    ]);
     setLoading(false);
   };
 

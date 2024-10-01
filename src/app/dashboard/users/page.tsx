@@ -5,8 +5,9 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useUser } from '@/contexts/UserContext';
 import { motion } from 'framer-motion';
+import { User, Mail, Calendar, ArrowUpDown } from 'lucide-react';
 
-interface User {
+interface UserProfile {
   id: string;
   email: string;
   role: string;
@@ -16,7 +17,7 @@ interface User {
 
 const UsersPage: React.FC = () => {
   const { user, loading: userLoading } = useUser();
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
@@ -31,6 +32,7 @@ const UsersPage: React.FC = () => {
     }
   }, [user]);
 
+
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
@@ -43,7 +45,7 @@ const UsersPage: React.FC = () => {
       const now = new Date();
       const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-      const processedUsers: User[] = data.map(user => ({
+      const processedUsers: UserProfile[] = data.map(user => ({
         ...user,
         is_new: new Date(user.created_at) > oneWeekAgo
       }));
@@ -115,30 +117,36 @@ const UsersPage: React.FC = () => {
 
         <motion.div
           className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6 mb-6"
-          whileHover={{ scale: 1.0 }}
+          whileHover={{ scale: 1.01 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
           <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
             Set User Role
           </h2>
           <div className="space-y-4">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="User Email"
-              className="input-field w-full"
-            />
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="input-field w-full"
-            >
-              <option value="Visitor">Visitor</option>
-              <option value="Member">Member</option>
-              <option value="Manager">Manager</option>
-              <option value="Admin">Admin</option>
-            </select>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="User Email"
+                className="input-field w-full pl-10"
+              />
+            </div>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="input-field w-full pl-10"
+              >
+                <option value="Visitor">Visitor</option>
+                <option value="Member">Member</option>
+                <option value="Manager">Manager</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
             <button onClick={handleSetRole} className="btn-secondary w-full">
               Set User Role
             </button>
@@ -147,7 +155,7 @@ const UsersPage: React.FC = () => {
 
         <motion.div
           className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
-          whileHover={{ scale: 1.0 }}
+          whileHover={{ scale: 1.01 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
           <div className="flex justify-between items-center mb-4">
@@ -156,8 +164,9 @@ const UsersPage: React.FC = () => {
             </h2>
             <button
               onClick={toggleSortOrder}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors flex items-center"
             >
+              <ArrowUpDown size={16} className="mr-2" />
               Sort by Last Login {sortOrder === 'asc' ? '↑' : '↓'}
             </button>
           </div>
@@ -174,20 +183,25 @@ const UsersPage: React.FC = () => {
                   whileHover={{ scale: 1.01, backgroundColor: "rgba(255,255,255,0.25)" }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <div className="flex justify-between items-center">
-                    <p>Email: {user.email}</p>
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center">
+                      <Mail size={16} className="mr-2 text-blue-400" />
+                      <p>{user.email}</p>
+                    </div>
                     {user.is_new && (
                       <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">New</span>
                     )}
                   </div>
-                  <p>Last Login: {new Date(user.last_login).toLocaleString()}</p>
-                  <div className="mt-2">
-                    <label htmlFor={`role-${user.id}`} className="mr-2">Role:</label>
+                  <div className="flex items-center mb-2">
+                    <Calendar size={16} className="mr-2 text-purple-400" />
+                    <p className="text-sm">Last Login: {new Date(user.last_login).toLocaleString()}</p>
+                  </div>
+                  <div className="flex items-center">
+                    <User size={16} className="mr-2 text-yellow-400" />
                     <select
-                      id={`role-${user.id}`}
                       value={user.role}
                       onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                      className="bg-white bg-opacity-20 rounded p-1"
+                      className="bg-white bg-opacity-20 rounded p-1 text-sm"
                     >
                       <option value="Visitor">Visitor</option>
                       <option value="Member">Member</option>

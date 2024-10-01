@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, ExternalLink, AlertTriangle, BarChart, Tag, User } from 'lucide-react';
+import { useUser } from '@/contexts/UserContext';
 
 interface Task {
   id: string;
@@ -15,6 +16,11 @@ interface Task {
   deadline: string;
   project_id: string;
   project_name: string;
+  urgency: number;
+  difficulty: number;
+  priority: number;
+  category_id: string;
+  category_name: string;
 }
 
 export interface TaskListProps {
@@ -25,38 +31,23 @@ export interface TaskListProps {
   defaultFilterStatus?: string;
 }
 
-type SortKey = 'name' | 'status' | 'points' | 'created_at' | 'deadline' | 'project_name';
+type SortKey = 'name' | 'status' | 'points' | 'created_at' | 'deadline' | 'project_name' | 'urgency' | 'difficulty' | 'priority';
 
 const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, projectId, defaultFilterStatus = '' }) => {
-  const [userRole, setUserRole] = useState<string>('');
-  const [userId, setUserId] = useState<string>('');
+  const { user } = useUser();
   const [sortKey, setSortKey] = useState<SortKey>('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [filterStatus, setFilterStatus] = useState<string>(defaultFilterStatus);
   const supabase = createClientComponentClient();
 
   useEffect(() => {
-    fetchUserInfo();
-  }, []);
-
-  useEffect(() => {
     setFilterStatus(defaultFilterStatus);
-  }, [defaultFilterStatus])
-
-  const fetchUserInfo = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      setUserId(user.id);
-      const { data, error } = await supabase.rpc('get_user_role', { user_email: user.email });
-      if (error) console.error('Error fetching user role:', error);
-      else setUserRole(data);
-    }
-  };
+  }, [defaultFilterStatus]);
 
   const applyForTask = async (taskId: string) => {
     const { error } = await supabase
       .from('tasks')
-      .update({ assigned_user_id: userId, status: 'Awaiting Applicant Approval' })
+      .update({ assigned_user_id: user?.id, status: 'Awaiting Applicant Approval' })
       .eq('id', taskId);
     if (error) {
       console.error('Error applying for task:', error);
@@ -141,6 +132,12 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, proje
     }
   };
 
+  const getUrgencyColor = (urgency: number) => {
+    if (urgency >= 8) return 'text-red-500';
+    if (urgency >= 5) return 'text-yellow-500';
+    return 'text-green-500';
+  };
+
   if (loading) {
     return <div className="text-center py-4">Loading tasks...</div>;
   }
@@ -151,8 +148,8 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, proje
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex space-x-2">
+      <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
+        <div className="flex space-x-2 flex-wrap">
           <button onClick={() => handleSort('name')} className="px-2 py-1 bg-purple-600 text-white rounded-md text-sm">
             Name {sortKey === 'name' && (sortDirection === 'asc' ? <ChevronUp className="inline" /> : <ChevronDown className="inline" />)}
           </button>
@@ -164,6 +161,9 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, proje
           </button>
           <button onClick={() => handleSort('deadline')} className="px-2 py-1 bg-red-600 text-white rounded-md text-sm">
             Deadline {sortKey === 'deadline' && (sortDirection === 'asc' ? <ChevronUp className="inline" /> : <ChevronDown className="inline" />)}
+          </button>
+          <button onClick={() => handleSort('urgency')} className="px-2 py-1 bg-orange-600 text-white rounded-md text-sm">
+            Urgency {sortKey === 'urgency' && (sortDirection === 'asc' ? <ChevronUp className="inline" /> : <ChevronDown className="inline" />)}
           </button>
           {!projectId && (
             <button onClick={() => handleSort('project_name')} className="px-2 py-1 bg-green-600 text-white rounded-md text-sm">
@@ -192,7 +192,9 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, proje
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <h3 className="text-lg font-bold mb-2 text-purple-300">{task.name}</h3>
+            <Link href={`/dashboard/tasks/${task.id}`} className="block">
+              <h3 className="text-lg font-bold mb-2 text-purple-300 hover:text-purple-400 transition-colors">{task.name}</h3>
+            </Link>
             {!projectId && (
               <p className="text-sm text-blue-300 mb-2">Project: {task.project_name}</p>
             )}
@@ -201,20 +203,40 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, proje
               <span className={getStatusClassName(task.status)}>{task.status}</span>
               <span className="font-bold text-yellow-400">{task.points} Points</span>
             </div>
+            <div className="grid grid-cols-3 gap-2 mb-2">
+              <div className="flex items-center">
+                <AlertTriangle className={`mr-1 ${getUrgencyColor(task.urgency)}`} size={12} />
+                <span className="text-xs text-gray-400">{task.urgency}/5</span>
+              </div>
+              <div className="flex items-center">
+                <BarChart className="mr-1 text-blue-400" size={12} />
+                <span className="text-xs text-gray-400">{task.difficulty}/5</span>
+              </div>
+              <div className="flex items-center">
+                <Tag className="mr-1 text-green-400" size={12} />
+                <span className="text-xs text-gray-400">{task.priority}/5</span>
+              </div>
+            </div>
             <div className="text-xs text-gray-400 mb-2">
               <p>Created: {new Date(task.created_at).toLocaleDateString()}</p>
               <p>Deadline: {new Date(task.deadline).toLocaleDateString()}</p>
             </div>
             <div className="flex flex-wrap gap-2">
+              <Link 
+                href={`/dashboard/tasks/${task.id}`}
+                className="text-xs px-2 py-1 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors flex items-center"
+              >
+                View Details <ExternalLink size={12} className="ml-1" />
+              </Link>
               {task.assigned_user_id && (
                 <Link 
-                  href={`/profile/${task.assigned_user_id}`}
-                  className="text-xs px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                  href={`/dashboard/profile/${task.assigned_user_id}`}
+                  className="text-xs px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center"
                 >
-                  View Applicant
+                  View Applicant <User size={12} className="ml-1" />
                 </Link>
               )}
-              {(userRole === 'Member' || userRole === 'Manager' || userRole === 'Admin') && 
+              {(user?.role === 'Member' || user?.role === 'Manager' || user?.role === 'Admin') && 
                task.status === 'Open' && !task.assigned_user_id && (
                 <button 
                   onClick={() => applyForTask(task.id)}
@@ -223,7 +245,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, proje
                   Apply
                 </button>
               )}
-              {(userRole === 'Manager' || userRole === 'Admin') && task.status === 'Awaiting Applicant Approval' && (
+              {(user?.role === 'Manager' || user?.role === 'Admin') && task.status === 'Awaiting Applicant Approval' && (
                 <button 
                   onClick={() => approveApplication(task.id)}
                   className="text-xs px-2 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors"
@@ -231,7 +253,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, proje
                   Approve Application
                 </button>
               )}
-              {task.assigned_user_id === userId && task.status === 'In Progress' && (
+              {task.assigned_user_id === user?.id && task.status === 'In Progress' && (
                 <button 
                   onClick={() => markTaskAsDone(task.id)}
                   className="text-xs px-2 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors"
@@ -239,7 +261,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, proje
                   Mark as Done
                 </button>
               )}
-              {(userRole === 'Manager' || userRole === 'Admin') && task.status === 'Awaiting Completion Approval' && (
+              {(user?.role === 'Manager' || user?.role === 'Admin') && task.status === 'Awaiting Completion Approval' && (
                 <button 
                   onClick={() => approveTaskCompletion(task.id)}
                   className="text-xs px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"

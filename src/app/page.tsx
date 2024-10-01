@@ -4,10 +4,10 @@ import Image from 'next/image'
 import GetInForm from '@/components/GetInForm'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
-import UpcomingEventsSection from '@/components/UpcomingEventsSection'
 import KnowledgeHubSection from '@/components/KnowledgeHubSection'
 import SponsorsSection from '@/components/SponsorsSection'
 import TeamSection from '@/components/TeamSection'
+import UpcomingEventsSection from '@/components/UpcomingEventsSection'
 
 interface Slide {
   image: string;
@@ -80,20 +80,21 @@ const sections: Section[] = [
 export default function Home() {
   return (
     <>
-      <header className="container mx-auto px-4 py-6 flex justify-between items-center">
+      <header className="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center">
         <Image
           src="/images/abc-logo.png"
           alt="Aachen Blockchain Club Logo"
           width={150}
           height={50}
-          className="rounded-lg"
+          className="rounded-lg mb-4 md:mb-0"
         />
-        <nav>
-          <a href="#about" className="mr-4 hover:text-blue-300 transition-colors">About</a>
-          <a href="#events" className="mr-4 hover:text-blue-300 transition-colors">Events</a>
-          <a href="#knowledge-hub" className="mr-4 hover:text-blue-300 transition-colors">Knowledge Hub</a>
-          <a href="#sponsors" className="mr-4 hover:text-blue-300 transition-colors">Sponsors</a>
-          <a href="#team" className="mr-4 hover:text-blue-300 transition-colors">Team</a>
+        <nav className="flex flex-wrap justify-center">
+          <a href="#about" className="mr-4 mb-2 hover:text-blue-300 transition-colors">About</a>
+          <a href="#mission" className="mr-4 mb-2 hover:text-blue-300 transition-colors">Mission</a>
+          <a href="#events" className="mr-4 mb-2 hover:text-blue-300 transition-colors">Events</a>
+          <a href="#knowledge-hub" className="mr-4 mb-2 hover:text-blue-300 transition-colors">Knowledge Hub</a>
+          <a href="#sponsors" className="mr-4 mb-2 hover:text-blue-300 transition-colors">Sponsors</a>
+          <a href="#team" className="mr-4 mb-2 hover:text-blue-300 transition-colors">Team</a>
           <a href="#get-in" className="hover:text-blue-300 transition-colors">Get In</a>
         </nav>
       </header>
@@ -115,7 +116,7 @@ export default function Home() {
             </p>
             <div className="flex space-x-4">
               <a href="#about" className="btn-primary">Learn More</a>
-              <a href="#get-in" className="btn-secondary">Get In</a>
+              <a href="#get-in" className="btn-secondary">See Projects</a>
             </div>
           </div>
           <motion.div 
@@ -150,6 +151,10 @@ export default function Home() {
           </div>
         </motion.section>
 
+        <section id="mission" className="my-24">
+          <MissionStatementSection />
+        </section>
+
         <section id="events">
           <UpcomingEventsSection />
         </section>
@@ -177,7 +182,7 @@ export default function Home() {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <h2 className="text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
-            Get In
+            Go to Dashboard
           </h2>
           <div className="max-w-md mx-auto glass-panel p-8 rounded-lg">
             <GetInForm />
@@ -186,6 +191,70 @@ export default function Home() {
       </main>
     </>
   )
+}
+
+
+function MissionStatementSection() {
+  const challenges = [
+    {
+      title: "Designers",
+      description: "Dive into the design of apps, wallets, and platforms for the decentralized web, where user autonomy and peer-to-peer interaction are central.",
+      icon: "🎨"
+    },
+    {
+      title: "Engineers",
+      description: "Explore how decentralized systems interact with the physical world through IoT, edge computing, and Web3 infrastructure, and build the next generation of technology to support them.",
+      icon: "🛠️"
+    },
+    {
+      title: "Business & Economists",
+      description: "Develop new economic systems, token models, and decentralized finance (DeFi) solutions that challenge traditional business practices, fostering new forms of peer-to-peer commerce and collaboration.",
+      icon: "📊"
+    },
+    {
+      title: "Social Scientists & Philosophers",
+      description: "Help shape governance models, ethical frameworks, and societal impacts of decentralized technologies. Explore how blockchain and AI will reshape our social structures and human interactions.",
+      icon: "🧠"
+    },
+    {
+      title: "Artists & Creatives",
+      description: "Discover how blockchain and decentralized platforms can revolutionize art ownership, distribution, and collaboration, giving artists full control over their digital and physical creations.",
+      icon: "🎭"
+    }
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-12"
+    >
+      <div className="text-center mb-12">
+        <h2 className="text-4xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+          Our Mission
+        </h2>
+        <p className="text-xl max-w-3xl mx-auto">
+          At ABC, we are your gateway to reimagining the future of technology. As a dynamic and interdisciplinary community, we bring together students, innovators, and thinkers from all fields to reshape the way we interact with decentralized systems, blockchain, AI, and peer-to-peer networks.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {challenges.map((challenge, index) => (
+          <motion.div
+            key={index}
+            className="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-lg p-6 shadow-lg hover:shadow-xl transition-all duration-300"
+            whileHover={{ scale: 1.05, rotate: 1 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <div className="text-4xl mb-4">{challenge.icon}</div>
+            <h3 className="text-2xl font-semibold mb-3">{challenge.title}</h3>
+            <p className="text-gray-300">{challenge.description}</p>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  );
 }
 
 function SectionSlideshow({ title, slides, index }: SectionSlideshowProps) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { motion } from 'framer-motion';
-import { ChevronUp, ChevronDown, X } from 'lucide-react';
+import { ChevronUp, ChevronDown, X, Calendar, Globe, Lock, ExternalLink, CheckCircle, Users, Settings } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import Link from 'next/link';
 
@@ -12,6 +12,8 @@ interface Event {
   event_date: string;
   status: 'upcoming' | 'ongoing' | 'past';
   attendees: string[];
+  event_link: string;
+  event_type: 'Internal' | 'Public';
 }
 
 export interface EventListProps {
@@ -20,7 +22,7 @@ export interface EventListProps {
   onEventUpdate: () => void;
 }
 
-type SortKey = 'name' | 'event_date' | 'status';
+type SortKey = 'name' | 'event_date' | 'status' | 'event_type';
 
 const EventList: React.FC<EventListProps> = ({ events, loading, onEventUpdate }) => {
   const { user } = useUser();
@@ -48,14 +50,13 @@ const EventList: React.FC<EventListProps> = ({ events, loading, onEventUpdate })
       });
   }, [events, sortKey, sortDirection, filterStatus]);
 
-  const handleAttend = async (eventId: string) => {
+  const handleAttend = async (event: Event) => {
     if (!user) return;
   
-    // First, fetch the current attendees array
     const { data: eventData, error: fetchError } = await supabase
       .from('events')
       .select('attendees')
-      .eq('id', eventId)
+      .eq('id', event.id)
       .single();
   
     if (fetchError) {
@@ -64,14 +65,12 @@ const EventList: React.FC<EventListProps> = ({ events, loading, onEventUpdate })
       return;
     }
   
-    // Add the user's ID to the attendees array
     const updatedAttendees = [...(eventData.attendees || []), user.id];
   
-    // Update the event with the new attendees array
     const { data, error } = await supabase
       .from('events')
       .update({ attendees: updatedAttendees })
-      .eq('id', eventId);
+      .eq('id', event.id);
   
     if (error) {
       console.error('Error registering for event:', error);
@@ -79,6 +78,11 @@ const EventList: React.FC<EventListProps> = ({ events, loading, onEventUpdate })
     } else {
       alert('Successfully registered for the event!');
       onEventUpdate();
+      
+      // Redirect to event link if it's a public event with a link
+      if (event.event_type === 'Public' && event.event_link) {
+        window.open(event.event_link, '_blank');
+      }
     }
   };
 
@@ -115,14 +119,14 @@ const EventList: React.FC<EventListProps> = ({ events, loading, onEventUpdate })
     return <div className="text-center py-4">Loading events...</div>;
   }
 
-  if (events.length === 0) {
+  if (sortedAndFilteredEvents.length === 0) {
     return <div className="text-center py-4">No events available.</div>;
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex space-x-2">
+      <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
+        <div className="flex space-x-2 flex-wrap">
           <button onClick={() => handleSort('name')} className="px-2 py-1 bg-purple-600 text-white rounded-md text-sm">
             Name {sortKey === 'name' && (sortDirection === 'asc' ? <ChevronUp className="inline" /> : <ChevronDown className="inline" />)}
           </button>
@@ -131,6 +135,9 @@ const EventList: React.FC<EventListProps> = ({ events, loading, onEventUpdate })
           </button>
           <button onClick={() => handleSort('status')} className="px-2 py-1 bg-green-600 text-white rounded-md text-sm">
             Status {sortKey === 'status' && (sortDirection === 'asc' ? <ChevronUp className="inline" /> : <ChevronDown className="inline" />)}
+          </button>
+          <button onClick={() => handleSort('event_type')} className="px-2 py-1 bg-yellow-600 text-white rounded-md text-sm">
+            Type {sortKey === 'event_type' && (sortDirection === 'asc' ? <ChevronUp className="inline" /> : <ChevronDown className="inline" />)}
           </button>
         </div>
         <select
@@ -165,23 +172,52 @@ const EventList: React.FC<EventListProps> = ({ events, loading, onEventUpdate })
             <p className="text-sm text-gray-300 mb-2 line-clamp-2">{event.description}</p>
             <div className="flex justify-between items-center mb-2">
               <span className={getStatusClassName(event.status)}>{event.status}</span>
-              <span className="text-sm text-gray-400">{new Date(event.event_date).toLocaleDateString()}</span>
+              <span className="text-sm text-gray-400 flex items-center">
+                <Calendar className="mr-1" size={14} />
+                {new Date(event.event_date).toLocaleDateString()}
+              </span>
             </div>
-            <p className="text-sm text-gray-300 mb-2">Attendees: {event.attendees.length}</p>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-gray-300 flex items-center">
+                {event.event_type === 'Internal' ? <Lock size={14} className="mr-1" /> : <Globe size={14} className="mr-1" />}
+                {event.event_type}
+              </span>
+              <span className="text-sm text-gray-300">Attendees: {event.attendees.length}</span>
+            </div>
             {user && user.role !== 'Visitor' && event.status === 'upcoming' && (
               event.attendees.includes(user.id) ? (
-                <p className="text-sm text-green-400">You are registered for this event</p>
+                <p className="text-sm text-green-400 flex items-center">
+                  <CheckCircle size={14} className="mr-1" />
+                  You are registered for this event
+                </p>
               ) : (
                 <button 
-                  onClick={() => handleAttend(event.id)}
-                  className="w-full mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                  onClick={() => handleAttend(event)}
+                  className="w-full mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center"
                 >
+                  <Users size={14} className="mr-1" />
                   Attend
+                  {event.event_type === 'Public' && event.event_link && (
+                    <ExternalLink size={14} className="ml-1" />
+                  )}
                 </button>
               )
             )}
+            {user && user.role === 'Visitor' && event.event_type === 'Public' && event.status === 'upcoming' && event.event_link && (
+              <a
+                href={event.event_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full mt-2 text-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center"
+              >
+                <Users size={14} className="mr-1" />
+                Attend
+                <ExternalLink size={14} className="ml-1" />
+              </a>
+            )}
             {user && ['Admin', 'Manager'].includes(user.role) && (
-              <Link href={`/dashboard/events/${event.id}`} className="block w-full mt-2 text-center px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors">
+              <Link href={`/dashboard/events/${event.id}`} className="block w-full mt-2 text-center px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors flex items-center justify-center">
+                <Settings size={14} className="mr-1" />
                 Manage Event
               </Link>
             )}
