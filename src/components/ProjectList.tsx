@@ -28,6 +28,11 @@ interface Task {
   deadline: string;
   project_id: string;
   project_name: string;
+  urgency: number;
+  difficulty: number;
+  priority: number;
+  category_id: string;
+  category_name: string;
 }
 
 interface ProjectListProps {
