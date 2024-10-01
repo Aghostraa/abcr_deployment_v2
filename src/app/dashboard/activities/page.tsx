@@ -14,9 +14,11 @@ interface Event {
   id: string;
   name: string;
   description: string;
-  attendees: string[];
   event_date: string;
+  attendees: string[];
   status: 'upcoming' | 'ongoing' | 'past';
+  event_link: string;
+  event_type: 'Internal' | 'Public';
 }
 
 interface RecurringTask {
