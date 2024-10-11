@@ -7,7 +7,10 @@ export async function middleware(req: NextRequest) {
   const supabase = createMiddlewareClient({ req, res })
   const { data: { session } } = await supabase.auth.getSession()
 
-  if (req.nextUrl.pathname === '/impressum') {
+  // Allow access to impressum, attendance pages, and login API route without authentication
+  if (req.nextUrl.pathname === '/impressum' || 
+      req.nextUrl.pathname.startsWith('/attendance') ||
+      req.nextUrl.pathname.startsWith('/api/login')) {
     return res
   }
 
@@ -42,5 +45,16 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/admin/:path*', '/manager/:path*', '/member/:path*', '/tasks/:path*', '/teams/:path*', '/profile/:path*', '/impressum'],
+  matcher: [
+    '/dashboard/:path*', 
+    '/admin/:path*', 
+    '/manager/:path*', 
+    '/member/:path*', 
+    '/tasks/:path*', 
+    '/teams/:path*', 
+    '/profile/:path*', 
+    '/impressum',
+    '/attendance/:path*',
+    '/api/login'
+  ],
 }
