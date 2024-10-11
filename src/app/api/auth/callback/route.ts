@@ -51,9 +51,14 @@ export async function GET(request: Request) {
             .eq('id', user.id)
         }
 
-        const intendedEvent = cookies().get('intended_event')?.value
+        const cookieStore = cookies()
+        const intendedEvent = cookieStore.get('intended_event')
+
         if (intendedEvent) {
-          return NextResponse.redirect(new URL(`/attendance/${intendedEvent}`, request.url))
+          // Clear the intended_event cookie
+          cookieStore.delete('intended_event')
+          
+          return NextResponse.redirect(new URL(`/attendance/${intendedEvent.value}`, request.url))
         }
       }
 
