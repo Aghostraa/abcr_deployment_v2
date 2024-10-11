@@ -6,13 +6,14 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
   const { data: { session } } = await supabase.auth.getSession()
-
+  
   // Allow access to impressum, attendance pages, and login API route without authentication
   if (req.nextUrl.pathname === '/impressum' || 
-      req.nextUrl.pathname.startsWith('/attendance') ||
-      req.nextUrl.pathname.startsWith('/api/login')) {
-    return res
-  }
+    req.nextUrl.pathname.startsWith('/attendance') ||
+    req.nextUrl.pathname.startsWith('/api/login') ||
+    req.nextUrl.pathname.startsWith('/api/set-intended-event')) {
+  return res
+}
 
   // Redirect unauthenticated users to login page
   if (!session && !req.nextUrl.pathname.startsWith('/login')) {
@@ -55,6 +56,7 @@ export const config = {
     '/profile/:path*', 
     '/impressum',
     '/attendance/:path*',
-    '/api/login'
+    '/api/login',
+    '/api/set-intended-event'
   ],
 }

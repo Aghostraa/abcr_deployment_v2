@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   response.cookies.set('intended_event', eventId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility
     maxAge: 60 * 5, // 5 minutes
     path: '/',
   })

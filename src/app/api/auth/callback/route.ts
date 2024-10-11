@@ -56,12 +56,13 @@ export async function GET(request: Request) {
 
         if (intendedEvent) {
           // Clear the intended_event cookie
-          cookieStore.delete('intended_event')
+          cookieStore.set('intended_event', '', { maxAge: 0, path: '/' })
           
           return NextResponse.redirect(new URL(`/attendance/${intendedEvent.value}`, request.url))
         }
       }
 
+      // If there's no intended event, redirect to dashboard
       return NextResponse.redirect(new URL('/dashboard', request.url))
     } catch (error) {
       console.error('Auth error:', error)
