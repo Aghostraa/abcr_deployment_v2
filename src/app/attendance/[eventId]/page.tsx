@@ -8,12 +8,8 @@ export default async function QRAttendancePage({ params }: { params: { eventId: 
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {
-    // Set the intended_event as a cookie
-    cookies().set('intended_event', params.eventId, { 
-      maxAge: 60 * 5, // 5 minutes
-      path: '/',
-    })
-    redirect('/login')
+    // Redirect to a new API route that will handle cookie setting
+    redirect(`/api/set-intended-event?eventId=${params.eventId}`)
   }
 
   const { data: event, error } = await supabase
