@@ -66,7 +66,7 @@ export default function QRAttendanceForm({ eventId, userId }: { eventId: string,
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Congratulations!</h2>
-      <p className="text-xl">You've received:</p>
+      <p className="text-xl">You&apos;ve received:</p>
       <div className="bg-white bg-opacity-10 p-4 rounded-lg">
         <p className="text-2xl font-bold">20 Points</p>
         <p>New badge unlocked!</p>
