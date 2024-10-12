@@ -50,17 +50,38 @@ const EventDetailsPage = ({ params }: { params: { id: string } }) => {
   };
 
   const downloadQRCode = () => {
-    const canvas = document.getElementById('qr-code') as HTMLCanvasElement;
-    if (canvas) {
-      const pngUrl = canvas
-        .toDataURL('image/png')
-        .replace('image/png', 'image/octet-stream');
-      let downloadLink = document.createElement('a');
-      downloadLink.href = pngUrl;
-      downloadLink.download = `event_qr_${event?.id}.png`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+    const svgElement = document.getElementById('qr-code');
+    if (svgElement) {
+      // Get the SVG data
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      
+      // Create a new image and set its source to the SVG blob
+      const img = new Image();
+      img.onload = () => {
+        // Create a canvas and draw the image on it
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0);
+        
+        // Convert canvas to blob
+        canvas.toBlob((blob) => {
+          if (blob) {
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = `event_qr_${event?.id}.png`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
+          }
+        }, 'image/png');
+      };
+      img.src = URL.createObjectURL(svgBlob);
     }
   };
 
@@ -141,8 +162,8 @@ const EventDetailsPage = ({ params }: { params: { id: string } }) => {
                     onClick={downloadQRCode}
                     className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center"
                   >
-                    <Download size={14} className="mr-2" />
-                    Download QR Code
+                     <Download size={14} className="mr-2" />
+                     Download QR Code
                   </button>
                 </div>
               )}
