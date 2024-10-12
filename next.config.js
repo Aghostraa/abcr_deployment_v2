@@ -1,9 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    experimental: {
-      appDir: true,
-    },
-  }
+  reactStrictMode: true,
+  transpilePackages: ['framer-motion'],
+  experimental: {
+    appDir: true,
+  },
+}
   
   module.exports = {
     async rewrites() {

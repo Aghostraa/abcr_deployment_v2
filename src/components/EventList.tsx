@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { motion } from 'framer-motion';
-import { ChevronUp, ChevronDown, X, Calendar, Globe, Lock, ExternalLink, CheckCircle, Users, Settings } from 'lucide-react';
+import { ChevronUp, ChevronDown, X, Calendar, Globe, Lock, ExternalLink, Users } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import Link from 'next/link';
 
@@ -50,42 +50,6 @@ const EventList: React.FC<EventListProps> = ({ events, loading, onEventUpdate })
       });
   }, [events, sortKey, sortDirection, filterStatus]);
 
-  const handleAttend = async (event: Event) => {
-    if (!user) return;
-  
-    const { data: eventData, error: fetchError } = await supabase
-      .from('events')
-      .select('attendees')
-      .eq('id', event.id)
-      .single();
-  
-    if (fetchError) {
-      console.error('Error fetching event:', fetchError);
-      alert('Failed to register for the event. Please try again.');
-      return;
-    }
-  
-    const updatedAttendees = [...(eventData.attendees || []), user.id];
-  
-    const { data, error } = await supabase
-      .from('events')
-      .update({ attendees: updatedAttendees })
-      .eq('id', event.id);
-  
-    if (error) {
-      console.error('Error registering for event:', error);
-      alert('Failed to register for the event. Please try again.');
-    } else {
-      alert('Successfully registered for the event!');
-      onEventUpdate();
-      
-      // Redirect to event link if it's a public event with a link
-      if (event.event_type === 'Public' && event.event_link) {
-        window.open(event.event_link, '_blank');
-      }
-    }
-  };
-
   const getStatusClassName = (status: string) => {
     const baseClass = "px-2 py-1 rounded-full text-xs font-semibold";
     switch (status) {
@@ -95,7 +59,6 @@ const EventList: React.FC<EventListProps> = ({ events, loading, onEventUpdate })
       default: return `${baseClass} bg-gray-500 text-white`;
     }
   };
-
   const handleDeleteEvent = async (eventId: string) => {
     if (!user || !['Admin', 'Manager'].includes(user.role)) return;
 
@@ -158,7 +121,7 @@ const EventList: React.FC<EventListProps> = ({ events, loading, onEventUpdate })
             className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg p-4 shadow-md relative"
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 300 }}
-          >
+          > 
             {user && ['Admin', 'Manager'].includes(user.role) && (
               <button
                 onClick={() => handleDeleteEvent(event.id)}
@@ -184,40 +147,20 @@ const EventList: React.FC<EventListProps> = ({ events, loading, onEventUpdate })
               </span>
               <span className="text-sm text-gray-300">Attendees: {event.attendees.length}</span>
             </div>
-            {user && user.role !== 'Visitor' && event.status === 'upcoming' && (
-              event.attendees.includes(user.id) ? (
-                <p className="text-sm text-green-400 flex items-center">
-                  <CheckCircle size={14} className="mr-1" />
-                  You are registered for this event
-                </p>
-              ) : (
-                <button 
-                  onClick={() => handleAttend(event)}
-                  className="w-full mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center"
-                >
-                  <Users size={14} className="mr-1" />
-                  Attend
-                  {event.event_type === 'Public' && event.event_link && (
-                    <ExternalLink size={14} className="ml-1" />
-                  )}
-                </button>
-              )
-            )}
-            {user && user.role === 'Visitor' && event.event_type === 'Public' && event.status === 'upcoming' && event.event_link && (
-              <a
+            {user && user.role !== 'Visitor' && event.status === 'upcoming' && event.event_type === 'Public' && (
+              <a 
                 href={event.event_link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full mt-2 text-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center"
+                className="w-full mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center"
               >
                 <Users size={14} className="mr-1" />
-                Attend
+                Sign Up
                 <ExternalLink size={14} className="ml-1" />
               </a>
             )}
             {user && ['Admin', 'Manager'].includes(user.role) && (
               <Link href={`/dashboard/events/${event.id}`} className="block w-full mt-2 text-center px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors flex items-center justify-center">
-                <Settings size={14} className="mr-1" />
                 Manage Event
               </Link>
             )}
