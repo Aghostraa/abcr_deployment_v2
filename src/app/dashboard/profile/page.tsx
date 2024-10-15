@@ -30,6 +30,7 @@ interface Task {
   deadline: string;
 }
 
+// Main component for the Profile Page
 const ProfilePage: React.FC = () => {
   // Retrieve the current user from the UserContext
   const { user: contextUser } = useUser();
@@ -44,17 +45,16 @@ const ProfilePage: React.FC = () => {
   // Initialize the Supabase client for interacting with the backend
   const supabase = createClientComponentClient();
 
-  /**
-   * Fetches tasks assigned to the user and categorizes them based on their status.
-   * @param userId - The ID of the user whose tasks are to be fetched.
-   */
+  // Fetches tasks assigned to the user and categorizes them based on their status
   const fetchTasks = useCallback(async (userId: string) => {
+    // Query the 'tasks' table for tasks assigned to the user
     const { data: tasks, error } = await supabase
       .from('tasks')
       .select('id, name, points, status, urgency, difficulty, priority, deadline')
       .eq('assigned_user_id', userId);
 
     if (error) {
+      // Log any errors encountered during fetch
       console.error('Error fetching tasks:', error);
     } else {
       // Categorize tasks based on their status
@@ -64,11 +64,9 @@ const ProfilePage: React.FC = () => {
     }
   }, [supabase]);
 
-  /**
-   * Fetches suggested tasks that are currently open.
-   * Limits the number of suggested tasks to 3.
-   */
+  // Fetches suggested tasks that are currently open and limits to 3
   const fetchSuggestedTasks = useCallback(async () => {
+    // Query the 'tasks' table for open tasks
     const { data: tasks, error } = await supabase
       .from('tasks')
       .select('id, name, points, status, urgency, difficulty, priority, deadline')
@@ -76,16 +74,15 @@ const ProfilePage: React.FC = () => {
       .limit(3);
 
     if (error) {
+      // Log any errors encountered during fetch
       console.error('Error fetching suggested tasks:', error);
     } else {
+      // Update the suggestedTasks state with fetched data
       setSuggestedTasks(tasks || []);
     }
   }, [supabase]);
 
-  /**
-   * Fetches the user's profile data and associated tasks.
-   * Also fetches suggested tasks for the user.
-   */
+  // Fetches the user's profile data and associated tasks
   const fetchUserData = useCallback(async () => {
     if (contextUser) {
       // Fetch the user's role using a Supabase RPC function
@@ -99,6 +96,7 @@ const ProfilePage: React.FC = () => {
         .single();
       
       if (error) {
+        // Log any errors encountered during fetch
         console.error('Error fetching user data:', error);
       } else {
         // Update the user state with fetched data
@@ -125,31 +123,26 @@ const ProfilePage: React.FC = () => {
     }
   }, [contextUser, fetchUserData]);
 
-  /**
-   * Marks a task as done by updating its status in the database.
-   * @param taskId - The ID of the task to be marked as done.
-   */
+  // Marks a task as done by updating its status in the database
   const markTaskAsDone = async (taskId: string) => {
+    // Update the task's status to 'Awaiting Completion Approval'
     const { error } = await supabase
       .from('tasks')
       .update({ status: 'Awaiting Completion Approval' })
       .eq('id', taskId);
     
     if (error) {
+      // Log error and alert the user if the update fails
       console.error('Error marking task as done:', error);
       alert('Failed to mark task as done. Please try again.');
     } else {
+      // Alert the user of success and refresh user data
       alert('Task marked as done successfully!');
       fetchUserData(); // Refresh user data to reflect the updated task status
     }
   };
 
-  /**
-   * Returns the appropriate CSS class names based on the task's status.
-   * This function is used to style the status badge dynamically.
-   * @param status - The current status of the task
-   * @returns A string of CSS class names
-   */
+  // Returns the appropriate CSS class names based on the task's status
   const getStatusClassName = (status: string) => {
     const baseClass = "px-2 py-1 rounded-full text-xs font-semibold";
     switch (status.toLowerCase()) {
@@ -160,19 +153,14 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  /**
-   * Determines the text color based on the task's urgency level.
-   * This function is used to style the urgency indicator dynamically.
-   * @param urgency - The urgency level of the task (1-10)
-   * @returns A string representing a Tailwind CSS text color class
-   */
+  // Determines the text color based on the task's urgency level
   const getUrgencyColor = (urgency: number) => {
     if (urgency >= 8) return 'text-red-500';
     if (urgency >= 5) return 'text-yellow-500';
     return 'text-green-500';
   };
 
-  // Conditional rendering: Show a loading message if user data is not yet fetched
+  // Conditional rendering: Show a loading spinner if contextUser is not yet available
   if (!contextUser) {
     return (
       <DashboardLayout>
@@ -320,6 +308,7 @@ const ProfilePage: React.FC = () => {
             ))}
           </div>
         ) : (
+          // Message displayed when there are no in-progress tasks
           <p className="text-xl text-gray-300 mb-8">No tasks in progress.</p>
         )}
 
@@ -350,6 +339,7 @@ const ProfilePage: React.FC = () => {
             ))}
           </div>
         ) : (
+          // Message displayed when there are no tasks awaiting approval
           <p className="text-xl text-gray-300 mb-8">No tasks awaiting approval.</p>
         )}
 
@@ -400,6 +390,7 @@ const ProfilePage: React.FC = () => {
             ))}
           </div>
         ) : (
+          // Message displayed when there are no suggested tasks
           <p className="text-xl text-gray-300 mb-8">No suggested tasks available at the moment.</p>
         )}
 
@@ -430,6 +421,7 @@ const ProfilePage: React.FC = () => {
             ))}
           </div>
         ) : (
+          // Message displayed when there are no completed tasks
           <p className="text-xl text-gray-300 mb-8">No completed tasks yet.</p>
         )}
 

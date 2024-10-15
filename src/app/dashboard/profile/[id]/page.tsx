@@ -51,10 +51,7 @@ const IndividualProfilePage: React.FC = () => {
   // Initialize the Supabase client for interacting with the backend
   const supabase = createClientComponentClient();
 
-  /**
-   * Fetches the user's profile and associated tasks from Supabase.
-   * Categorizes tasks into completed and in-progress based on their status.
-   */
+  // Fetches the user's profile and associated tasks from Supabase
   const fetchUserProfile = useCallback(async () => {
     if (!id) return; // Exit if no user ID is provided
     setLoading(true); // Set loading state to true before fetching data
@@ -92,26 +89,19 @@ const IndividualProfilePage: React.FC = () => {
       setInProgressTasks(tasks.filter(task => ['In Progress', 'Awaiting Completion Approval'].includes(task.status)) || []);
     } catch (err) {
       // Handle any errors that occur during data fetching
-      setError('Failed to fetch user profile');
+      setError('Failed to fetch user profile'); // Set error message
       console.error(err); // Log the error for debugging purposes
     } finally {
       setLoading(false); // Set loading state to false after fetching is complete
     }
   }, [id, supabase]);
 
-  /**
-   * useEffect Hook
-   * 
-   * Triggers the fetchUserProfile function when the component mounts or when the 'id' changes.
-   */
+  // useEffect hook to fetch user profile when the component mounts or when 'id' changes
   useEffect(() => {
     fetchUserProfile();
   }, [fetchUserProfile]);
 
-  /**
-   * Marks a task as done by updating its status in the database.
-   * @param taskId - The ID of the task to be marked as done.
-   */
+  // Marks a task as done by updating its status in the database
   const markTaskAsDone = async (taskId: string) => {
     try {
       // Update the task's status to 'Awaiting Completion Approval'
@@ -126,17 +116,12 @@ const IndividualProfilePage: React.FC = () => {
       fetchUserProfile(); // Refresh the user profile to reflect the updated task status
     } catch (err) {
       // Handle any errors that occur during the update
-      console.error('Error marking task as done:', err);
+      console.error('Error marking task as done:', err); // Log the error
       alert('Failed to mark task as done. Please try again.'); // Notify the user of failure
     }
   };
 
-  /**
-   * Returns the appropriate CSS class names based on the task's status.
-   * This function is used to style the status badge dynamically.
-   * @param status - The current status of the task
-   * @returns A string of CSS class names
-   */
+  // Returns the appropriate CSS class names based on the task's status
   const getStatusClassName = (status: string) => {
     const baseClass = "px-2 py-1 rounded-full text-xs font-semibold";
     switch (status.toLowerCase()) {
@@ -151,21 +136,14 @@ const IndividualProfilePage: React.FC = () => {
     }
   };
 
-  /**
-   * Determines the text color based on the task's urgency level.
-   * This function is used to style the urgency indicator dynamically.
-   * @param urgency - The urgency level of the task (1-10)
-   * @returns A string representing a Tailwind CSS text color class
-   */
+  // Determines the text color based on the task's urgency level
   const getUrgencyColor = (urgency: number) => {
     if (urgency >= 8) return 'text-red-500';
     if (urgency >= 5) return 'text-yellow-500';
     return 'text-green-500';
   };
 
-  /**
-   * Conditional Rendering: Display a loading message while fetching data.
-   */
+  // Conditional rendering: Show a loading spinner if data is being fetched
   if (loading) {
     return (
       <DashboardLayout>
@@ -177,9 +155,7 @@ const IndividualProfilePage: React.FC = () => {
     );
   }
 
-  /**
-   * Conditional Rendering: Display an error message if there's an error or if the user profile is not found.
-   */
+  // Conditional rendering: Show an error message if there's an error or if the user profile is not found
   if (error || !userProfile) {
     return (
       <DashboardLayout>
@@ -292,6 +268,7 @@ const IndividualProfilePage: React.FC = () => {
               ))}
             </ul>
           ) : (
+            // Message displayed when there are no completed tasks
             <p className="text-xl text-gray-300">No completed tasks yet.</p>
           )}
         </motion.div>
@@ -325,6 +302,7 @@ const IndividualProfilePage: React.FC = () => {
               ))}
             </ul>
           ) : (
+            // Message displayed when there are no in-progress tasks
             <p className="text-xl text-gray-300">No tasks in progress.</p>
           )}
         </motion.div>
