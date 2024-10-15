@@ -39,10 +39,8 @@ const UsersPage: React.FC = () => {
     }
   }, [user]);
 
-  /**
-   * Fetches the list of users from the Supabase 'user_profiles' table.
-   * Processes the data to determine if a user is new (registered within the last week).
-   */
+  // Fetches the list of users from the Supabase 'user_profiles' table
+  // Processes the data to determine if a user is new (registered within the last week)
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
@@ -70,12 +68,10 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  /**
-   * Handles changing a user's role by invoking a Supabase RPC function.
-   * After updating, it refetches the users to reflect changes.
-   * @param userId - The ID of the user whose role is to be updated.
-   * @param newRole - The new role to assign to the user.
-   */
+  // Handles changing a user's role by invoking a Supabase RPC function
+  // After updating, it refetches the users to reflect changes
+  // @param userId - The ID of the user whose role is to be updated
+  // @param newRole - The new role to assign to the user
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       const { error } = await supabase.rpc('set_user_role', { user_id: userId, new_role: newRole });
@@ -88,10 +84,8 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  /**
-   * Handles setting a user's role based on the email input.
-   * Updates the user's role in the database and refetches the users.
-   */
+  // Handles setting a user's role based on the email input
+  // Updates the user's role in the database and refetches the users
   const handleSetRole = async () => {
     try {
       const { error } = await supabase
@@ -106,17 +100,13 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  /**
-   * Toggles the sort order between ascending and descending for the user list.
-   */
+  // Toggles the sort order between ascending and descending for the user list
   const toggleSortOrder = () => {
     setSortOrder(prevOrder => prevOrder === 'asc' ? 'desc' : 'asc');
   };
 
-  /**
-   * Sorts the users array based on the last login date.
-   * @returns A sorted array of users.
-   */
+  // Sorts the users array based on the last login date
+  // @returns A sorted array of users
   const sortedUsers = [...users].sort((a, b) => {
     const dateA = new Date(a.last_login).getTime();
     const dateB = new Date(b.last_login).getTime();
