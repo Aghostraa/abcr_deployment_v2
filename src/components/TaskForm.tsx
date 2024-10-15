@@ -4,7 +4,7 @@ import { useUser } from '@/contexts/UserContext';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import dynamic from 'next/dynamic';
-import { AlertTriangle, BarChart, Tag, Calendar } from 'lucide-react';
+import { AlertTriangle, BarChart, Tag, Calendar, Zap } from 'lucide-react';
 
 const ReactQuill = dynamic(() => import('react-quill'), {
   ssr: false,
@@ -38,6 +38,7 @@ interface FormData {
   difficulty: string;
   priority: string;
   deadline: Date | null;
+  point_amplifier: string;
 }
 
 interface Project {
@@ -65,10 +66,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated }) => {
     difficulty: '5',
     priority: '5',
     deadline: null,
+    point_amplifier: '1.00'
   });
   const [projects, setProjects] = useState<Project[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [points, setPoints] = useState(0);
+  const [amplifiedPoints, setAmplifiedPoints] = useState(0);
   const supabase = createClientComponentClient();
 
   const fetchProjects = useCallback(async () => {
@@ -95,10 +98,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated }) => {
   }, [fetchProjects, fetchCategories]);
 
   useEffect(() => {
-    const { urgency, difficulty, priority } = formData;
-    const calculatedPoints = (parseInt(urgency) + parseInt(difficulty) + parseInt(priority)) * 10;
-    setPoints(calculatedPoints);
-  }, [formData.urgency, formData.difficulty, formData.priority]);
+    const { urgency, difficulty, priority, point_amplifier } = formData;
+    const basePoints = (parseInt(urgency) + parseInt(difficulty) + parseInt(priority)) * 10;
+    setPoints(basePoints);
+    setAmplifiedPoints(Math.round(basePoints * parseFloat(point_amplifier)));
+  }, [formData.urgency, formData.difficulty, formData.priority, formData.point_amplifier]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -149,6 +153,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated }) => {
         difficulty: '5',
         priority: '5',
         deadline: null,
+        point_amplifier: '1.00'
       });
       onTaskCreated();
     }
@@ -245,7 +250,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <label htmlFor="urgency" className="block text-sm font-medium text-gray-200 mb-1">Urgency</label>
           <div className="relative">
@@ -295,6 +300,24 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated }) => {
             </select>
           </div>
         </div>
+        <div>
+        <label htmlFor="point_amplifier" className="block text-sm font-medium text-gray-200 mb-1">Point Amplifier</label>
+        <div className="relative">
+          <input
+            type="number"
+            id="point_amplifier"
+            name="point_amplifier"
+            value={formData.point_amplifier}
+            onChange={handleChange}
+            min="1.00"
+            max="9.99"
+            step="0.01"
+            className="input-field w-full pl-10 bg-white bg-opacity-10 text-white"
+          />
+          <Zap className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-400" size={20} />
+        </div>
+      </div>
+        
       </div>
 
       <div>
