@@ -27,13 +27,13 @@ interface Task {
   status: string;
 }
 
-/**
- * IndividualProfilePage Component
- * 
- * This component displays the profile of an individual user along with their associated tasks.
- * It fetches user profile data and categorizes tasks based on their status.
- * Additionally, it provides administrative actions for users with 'Admin' or 'Manager' roles.
- */
+
+//IndividualProfilePage Component
+//
+//This component displays the profile of an individual user along with their associated tasks.
+//It fetches user profile data and categorizes tasks based on their status.
+//Additionally, it provides administrative actions for users with 'Admin' or 'Manager' roles.
+
 const IndividualProfilePage: React.FC = () => {
   // Extract the 'id' parameter from the URL using Next.js's useParams hook
   const { id } = useParams();
