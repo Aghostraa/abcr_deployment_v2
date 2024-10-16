@@ -149,21 +149,7 @@ export default function TaskDetailsPage() {
     h3: ({ node, ...props }) => <h3 {...props} className="text-lg font-bold mt-2 mb-1" />,
     ul: ({ node, ...props }) => <ul {...props} className="list-disc list-inside my-2" />,
     ol: ({ node, ...props }) => <ol {...props} className="list-decimal list-inside my-2" />,
-    li: ({ node, ...props }) => <li {...props} className="ml-4" />,
-    code({ node, inline, className, children, ...props }) {
-      const match = /language-(\w+)/.exec(className || '');
-      return !inline && match ? (
-        <pre className="bg-gray-700 rounded p-2 my-2 overflow-x-auto">
-          <code className={className} {...props}>
-            {children}
-          </code>
-        </pre>
-      ) : (
-        <code className={`${className} bg-gray-700 rounded px-1`} {...props}>
-          {children}
-        </code>
-      );
-    },
+    li: ({ node, ...props }) => <li {...props} className="ml-4" />
   };
 
   if (loading) {
