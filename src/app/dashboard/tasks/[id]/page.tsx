@@ -1,5 +1,7 @@
 'use client'
 
+
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
@@ -7,7 +9,11 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
-import { ExternalLink, Clock, Calendar, User, Tag, AlertTriangle, BarChart } from 'lucide-react';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import { ExternalLink, Clock, Calendar, User, Tag, AlertTriangle, BarChart, Zap } from 'lucide-react';
+import { useUser } from '@/contexts/UserContext';
+
 
 interface Task {
   id: string;
@@ -25,6 +31,8 @@ interface Task {
   priority: number;
   category_id: string;
   category_name: string;
+  point_amplifier: number;
+  created_by: string;
 }
 
 export default function TaskDetailsPage() {
@@ -32,6 +40,9 @@ export default function TaskDetailsPage() {
   const { id } = params;
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
+  const [amplifier, setAmplifier] = useState('1.00');
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useUser();
   const supabase = createClientComponentClient();
 
   useEffect(() => {
@@ -42,6 +53,7 @@ export default function TaskDetailsPage() {
 
   const fetchTaskDetails = async () => {
     setLoading(true);
+    setError(null);
     const { data, error } = await supabase
       .from('tasks')
       .select(`
@@ -54,6 +66,7 @@ export default function TaskDetailsPage() {
 
     if (error) {
       console.error('Error fetching task details:', error);
+      setError('Failed to load task details. Please try again.');
       setLoading(false);
       return;
     }
@@ -63,7 +76,44 @@ export default function TaskDetailsPage() {
       project_name: data.projects.name,
       category_name: data.categories.name,
     });
+    setAmplifier(data.point_amplifier.toFixed(2));
     setLoading(false);
+  };
+
+  const handleAmplifierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAmplifier(e.target.value);
+  };
+
+  const updateAmplifier = async () => {
+    if (!task) return;
+    
+    const { error } = await supabase
+      .from('tasks')
+      .update({ point_amplifier: parseFloat(amplifier) })
+      .eq('id', task.id);
+
+    if (error) {
+      console.error('Error updating amplifier:', error);
+      setError('Failed to update point amplifier. Please try again.');
+    } else {
+      fetchTaskDetails();
+    }
+  };
+
+  const updateTaskStatus = async (newStatus: string) => {
+    if (!task) return;
+
+    const { error } = await supabase
+      .from('tasks')
+      .update({ status: newStatus })
+      .eq('id', task.id);
+
+    if (error) {
+      console.error('Error updating task status:', error);
+      setError('Failed to update task status. Please try again.');
+    } else {
+      fetchTaskDetails();
+    }
   };
 
   const getStatusClassName = (status: string) => {
@@ -79,9 +129,41 @@ export default function TaskDetailsPage() {
   };
 
   const getUrgencyColor = (urgency: number) => {
-    if (urgency >= 8) return 'text-red-500';
-    if (urgency >= 5) return 'text-yellow-500';
+    if (urgency >= 4) return 'text-red-500';
+    if (urgency >= 3) return 'text-yellow-500';
     return 'text-green-500';
+  };
+
+  const getAmplifiedPoints = (task: Task) => {
+    return Math.round(task.points * task.point_amplifier);
+  };
+
+  const components: React.ComponentProps<typeof ReactMarkdown>['components'] = {
+    a: ({ node, ...props }) => (
+      <a {...props} className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
+        {props.children}
+      </a>
+    ),
+    h1: ({ node, ...props }) => <h1 {...props} className="text-2xl font-bold mt-4 mb-2" />,
+    h2: ({ node, ...props }) => <h2 {...props} className="text-xl font-bold mt-3 mb-2" />,
+    h3: ({ node, ...props }) => <h3 {...props} className="text-lg font-bold mt-2 mb-1" />,
+    ul: ({ node, ...props }) => <ul {...props} className="list-disc list-inside my-2" />,
+    ol: ({ node, ...props }) => <ol {...props} className="list-decimal list-inside my-2" />,
+    li: ({ node, ...props }) => <li {...props} className="ml-4" />,
+    code({ node, inline, className, children, ...props }) {
+      const match = /language-(\w+)/.exec(className || '');
+      return !inline && match ? (
+        <pre className="bg-gray-700 rounded p-2 my-2 overflow-x-auto">
+          <code className={className} {...props}>
+            {children}
+          </code>
+        </pre>
+      ) : (
+        <code className={`${className} bg-gray-700 rounded px-1`} {...props}>
+          {children}
+        </code>
+      );
+    },
   };
 
   if (loading) {
@@ -94,11 +176,11 @@ export default function TaskDetailsPage() {
     );
   }
 
-  if (!task) {
+  if (error || !task) {
     return (
       <DashboardLayout>
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-red-500">Task not found</h1>
+        <div className="text-center text-red-500">
+          <p>{error || 'Task not found'}</p>
           <Link href="/dashboard/tasks" className="text-blue-500 hover:underline mt-4 inline-block">
             Back to Tasks
           </Link>
@@ -120,7 +202,11 @@ export default function TaskDetailsPage() {
           <span className={getStatusClassName(task.status)}>{task.status}</span>
           <span className="flex items-center text-yellow-400">
             <Tag className="mr-1" size={16} />
-            {task.points} Points
+            {task.points} Base Points
+          </span>
+          <span className="flex items-center text-green-400">
+            <Zap className="mr-1" size={16} />
+            {getAmplifiedPoints(task)} Amplified Points
           </span>
           <span className="flex items-center text-blue-300">
             <Calendar className="mr-1" size={16} />
@@ -156,19 +242,14 @@ export default function TaskDetailsPage() {
           </div>
         </div>
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-2 text-blue-200">Instructions</h2>
+        <h2 className="text-xl font-semibold mb-2 text-blue-200">Instructions</h2>
           <div className="prose prose-invert max-w-none">
-            <ReactMarkdown
-              components={{
-                a: ({ node, ...props }) => (
-                  <a {...props} className="text-blue-400 hover:underline flex items-center">
-                    {props.children}
-                    <ExternalLink size={12} className="ml-1" />
-                  </a>
-                ),
-              }}
+          <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw]}
+              components={components}
             >
-              {task.instructions}
+              {task?.instructions || ''}
             </ReactMarkdown>
           </div>
         </div>
@@ -184,11 +265,64 @@ export default function TaskDetailsPage() {
             </Link>
           </div>
         )}
+        {(user?.role === 'Admin' || user?.role === 'Manager') && task.status === 'Open' && (
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-2 text-blue-200">Amplify Points</h2>
+            <div className="flex items-center">
+              <input
+                type="number"
+                value={amplifier}
+                onChange={handleAmplifierChange}
+                min="1.00"
+                max="9.99"
+                step="0.01"
+                className="input-field w-32 mr-2"
+              />
+              <button
+                onClick={updateAmplifier}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                Update Amplifier
+              </button>
+            </div>
+          </div>
+        )}
+        {user && (user.role === 'Admin' || user.role === 'Manager' || user.id === task.created_by || user.id === task.assigned_user_id) && (
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-2 text-blue-200">Task Actions</h2>
+            <div className="flex flex-wrap gap-2">
+              {task.status === 'Open' && (
+                <button
+                  onClick={() => updateTaskStatus('In Progress')}
+                  className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors"
+                >
+                  Start Task
+                </button>
+              )}
+              {task.status === 'In Progress' && (
+                <button
+                  onClick={() => updateTaskStatus('Awaiting Completion Approval')}
+                  className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+                >
+                  Mark as Completed
+                </button>
+              )}
+              {task.status === 'Awaiting Completion Approval' && (user.role === 'Admin' || user.role === 'Manager') && (
+                <button
+                  onClick={() => updateTaskStatus('Complete')}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                >
+                  Approve Completion
+                </button>
+              )}
+            </div>
+          </div>
+        )}
         <Link 
-          href="/dashboard"
+          href="/dashboard/tasks"
           className="inline-block px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors mt-4"
         >
-          Back to Home
+          Back to Tasks
         </Link>
       </motion.div>
     </DashboardLayout>

@@ -13,6 +13,8 @@ import { useUser } from '@/contexts/UserContext';
 import WeeklyCheckinButton from '@/components/WeeklyCheckinButton';
 import Loading from '@/components/Loading';
 
+// Define TypeScript interfaces for various data structures
+
 interface Task {
   id: string;
   name: string;
@@ -60,6 +62,7 @@ interface ClubStats {
   last_updated: string;
 }
 
+// Sample data for visualization (if needed)
 const data = [
   { name: 'Jan', tasks: 4 },
   { name: 'Feb', tasks: 3 },
@@ -70,18 +73,25 @@ const data = [
 ];
 
 const DashboardPage: React.FC = () => {
+  // Retrieve the current user from context
   const { user } = useUser();
+
+  // Define state variables for various data
   const [tasks, setTasks] = useState<Task[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [recurringTasks, setRecurringTasks] = useState<RecurringTask[]>([]);
   const [clubStats, setClubStats] = useState<ClubStats | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Initialize Supabase client
   const supabase = createClientComponentClient();
-  
+
+  // Fetch data when the component mounts or when the user changes
   useEffect(() => {
     fetchData();
   }, [user]);
 
+  // Function to fetch all necessary data concurrently
   const fetchData = async () => {
     setLoading(true);
     await Promise.all([
@@ -93,6 +103,7 @@ const DashboardPage: React.FC = () => {
     setLoading(false);
   };
 
+  // Fetch recent tasks from Supabase
   const fetchRecentTasks = async () => {
     const { data, error } = await supabase
       .from('tasks')
@@ -103,6 +114,7 @@ const DashboardPage: React.FC = () => {
     if (error) {
       console.error('Error fetching tasks:', error);
     } else {
+      // Map the fetched data to include project names
       setTasks(data.map(task => ({
         ...task,
         project_name: task.projects.name
@@ -110,6 +122,7 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  // Fetch club statistics using a Supabase RPC function
   const fetchClubStats = async () => {
     const { data, error } = await supabase.rpc('get_club_stats');
     if (error) {
@@ -119,6 +132,7 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  // Fetch upcoming events from Supabase
   const fetchEvents = async () => {
     const { data, error } = await supabase
       .from('events')
@@ -133,6 +147,7 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  // Fetch recurring tasks from Supabase
   const fetchRecurringTasks = async () => {
     const { data, error } = await supabase
       .from('recurring_tasks')
@@ -144,15 +159,18 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  // Handler to update tasks and club stats after a task is updated
   const handleTaskUpdate = () => {
     fetchRecentTasks();
     fetchClubStats();
   };
 
+  // Handler to update events after an event is updated
   const handleEventUpdate = () => {
     fetchEvents();
   };
 
+  // Generate a mailto link for contacting the admin
   const generateMailtoLink = () => {
     const recipient = 'ahoura@aachen-blockchain.de';
     const subject = encodeURIComponent('ABC Blockchain Club Membership Inquiry');
@@ -170,6 +188,7 @@ Best regards,
     return `mailto:${recipient}?subject=${subject}&body=${body}`;
   };
 
+  // Display a loading indicator while data is being fetched
   if (loading) {
     return <Loading message="Loading Dashboard..." />;
   }
@@ -177,35 +196,46 @@ Best regards,
   return (
     <DashboardLayout>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        initial={{ opacity: 0, y: 20 }} // Initial animation state
+        animate={{ opacity: 1, y: 0 }} // Animation target state
+        transition={{ duration: 0.5 }} // Animation duration
         className="space-y-6"
       >
+        {/* Dashboard Title */}
         <h1 className="text-4xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
           Dashboard
         </h1>
+
+        {/* Weekly Check-in Button */}
         <WeeklyCheckinButton />
-        
+
+        {/* Club Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Total Users Card */}
           <motion.div whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Total Users</CardHeader>
               <CardContent className="text-4xl font-bold">{clubStats?.total_users || 0}</CardContent>
             </Card>
           </motion.div>
+
+          {/* Total Tasks Card */}
           <motion.div whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Total Tasks</CardHeader>
               <CardContent className="text-4xl font-bold">{clubStats?.total_tasks || 0}</CardContent>
             </Card>
           </motion.div>
+
+          {/* Total Points Card */}
           <motion.div whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Total Points</CardHeader>
               <CardContent className="text-4xl font-bold">{(clubStats?.total_user_points || 0) + (clubStats?.total_task_points || 0)}</CardContent>
             </Card>
           </motion.div>
+
+          {/* Monthly Completed Tasks Card */}
           <motion.div whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card>
               <CardHeader>Monthly Completed</CardHeader>
@@ -213,13 +243,17 @@ Best regards,
             </Card>
           </motion.div>
         </div>
-  
+
+        {/* Leaderboard Component */}
         <Leaderboard />
-  
+
+        {/* Conditional Rendering based on User Role */}
         {user && ['Admin', 'Manager', 'Member'].includes(user.role) && (
           <>
+            {/* Project List for Authorized Users */}
             <ProjectList defaultFilter="active" />
-  
+
+            {/* Upcoming Events Section */}
             <motion.div
               className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
               whileHover={{ scale: 1.0 }}
@@ -230,7 +264,8 @@ Best regards,
               </h2>
               <EventList events={events} loading={loading} onEventUpdate={handleEventUpdate} />
             </motion.div>
-  
+
+            {/* Recent Tasks Section */}
             <motion.div
               className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
               whileHover={{ scale: 1.0 }}
@@ -248,9 +283,11 @@ Best regards,
             </motion.div>
           </>
         )}
-  
+
+        {/* Content for Visitors or Unauthenticated Users */}
         {(!user || user.role === 'Visitor') && (
           <>
+            {/* Welcome Message */}
             <motion.div
               className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6 mb-6"
               whileHover={{ scale: 1.01 }}
@@ -263,9 +300,11 @@ Best regards,
                 Explore our ongoing projects and recent tasks. Join us to participate in these exciting initiatives!
               </p>
             </motion.div>
-  
+
+            {/* Project List for Visitors */}
             <ProjectList defaultFilter="active" />
 
+            {/* Upcoming Events for Visitors */}
             <motion.div
               className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6"
               whileHover={{ scale: 1.01 }}
@@ -276,7 +315,8 @@ Best regards,
               </h2>
               <EventList events={events} loading={loading} onEventUpdate={handleEventUpdate} />
             </motion.div>
-  
+
+            {/* Call-to-Action for Joining the Club */}
             <motion.div
               className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg p-6 mt-6"
               whileHover={{ scale: 1.01 }}

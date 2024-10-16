@@ -2,8 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ChevronUp, ChevronDown, ExternalLink, AlertTriangle, BarChart, Tag, User } from 'lucide-react';
+import { ChevronUp, ChevronDown, ExternalLink, AlertTriangle, BarChart, Tag, User, Zap } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+import ReactMarkdown from 'react-markdown';
 
 interface Task {
   id: string;
@@ -21,6 +22,7 @@ interface Task {
   priority: number;
   category_id: string;
   category_name: string;
+  point_amplifier: number;
 }
 
 export interface TaskListProps {
@@ -133,9 +135,31 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, proje
   };
 
   const getUrgencyColor = (urgency: number) => {
-    if (urgency >= 8) return 'text-red-500';
-    if (urgency >= 5) return 'text-yellow-500';
+    if (urgency >= 4) return 'text-red-500';
+    if (urgency >= 3) return 'text-yellow-500';
     return 'text-green-500';
+  };
+  
+  const stripMarkdown = (markdown: string) => {
+    // This is a simple stripping function. For more complex markdown, consider using a dedicated library.
+    return markdown
+      .replace(/#{1,6}\s?/g, '')
+      .replace(/(\*\*|__)(.*?)\1/g, '$2')
+      .replace(/(\*|_)(.*?)\1/g, '$2')
+      .replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '$1')
+      .replace(/\n/g, ' ')
+      .trim();
+  };
+
+  const getAmplifiedPoints = (task: Task) => {
+    return Math.round(task.points * task.point_amplifier);
+  };
+  const getCardClassName = (task: Task) => {
+    const baseClass = "bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg p-4 shadow-md";
+    if (task.point_amplifier > 1) {
+      return `${baseClass} border-2 border-yellow-400 shadow-lg shadow-yellow-400/50`;
+    }
+    return baseClass;
   };
 
   if (loading) {
@@ -188,7 +212,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, proje
         {sortedAndFilteredTasks.map(task => (
           <motion.div
             key={task.id}
-            className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg p-4 shadow-md"
+            className={getCardClassName(task)}
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
@@ -198,10 +222,18 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, proje
             {!projectId && (
               <p className="text-sm text-blue-300 mb-2">Project: {task.project_name}</p>
             )}
-            <p className="text-sm text-gray-300 mb-2 line-clamp-2">{task.instructions}</p>
             <div className="flex justify-between items-center mb-2">
               <span className={getStatusClassName(task.status)}>{task.status}</span>
-              <span className="font-bold text-yellow-400">{task.points} Points</span>
+              <div className="flex items-center">
+                <span className="font-bold text-yellow-400">
+                  {task.points} {task.point_amplifier > 1 && `x${task.point_amplifier.toFixed(1)}`}
+                </span>
+                {task.point_amplifier > 1 && (
+                  <span className="ml-2 font-bold text-green-400 flex items-center">
+                    {getAmplifiedPoints(task)} <Zap className="ml-1" size={16} />
+                  </span>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-3 gap-2 mb-2">
               <div className="flex items-center">
@@ -226,7 +258,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onTaskUpdate, proje
                 href={`/dashboard/tasks/${task.id}`}
                 className="text-xs px-2 py-1 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors flex items-center"
               >
-                View Details <ExternalLink size={12} className="ml-1" />
+                View Instructions <ExternalLink size={12} className="ml-1" />
               </Link>
               {task.assigned_user_id && (
                 <Link 
