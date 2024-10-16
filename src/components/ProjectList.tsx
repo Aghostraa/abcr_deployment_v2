@@ -33,6 +33,7 @@ interface Task {
   priority: number;
   category_id: string;
   category_name: string;
+  point_amplifier: number;
 }
 
 interface ProjectListProps {
