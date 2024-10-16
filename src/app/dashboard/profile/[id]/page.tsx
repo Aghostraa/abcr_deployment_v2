@@ -319,7 +319,7 @@ const IndividualProfilePage: React.FC = () => {
             </h2>
             {/* Placeholder for administrative actions such as changing user roles, resetting passwords, etc. */}
             <p className="text-gray-300">
-              Administrative actions can be added here, such as changing the user's role, resetting passwords, or other management tasks.
+              Administrative actions can be added here, such as changing the user&aposs role, resetting passwords, or other management tasks.
             </p>
           </motion.div>
         )}
