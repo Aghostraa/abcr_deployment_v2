@@ -100,7 +100,7 @@ export default function QRAttendanceForm({ eventId, userId }: { eventId: string,
             <h2 className="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
               Congratulations!
             </h2>
-            <p className="text-xl text-center text-white">You've received:</p>
+            <p className="text-xl text-center text-white">You&aposve received:</p>
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
