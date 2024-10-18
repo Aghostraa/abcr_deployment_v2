@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { CheckCircle, Award, Coffee, Calendar } from 'lucide-react'
 import Confetti from './Confetti'
+import ConfettiExplosion from 'react-confetti-explosion'
 
 export default function QRAttendanceForm({ eventId, userId }: { eventId: string, userId: string }) {
+  const [isExploding, setIsExploding] = useState(false)
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
@@ -61,7 +63,7 @@ export default function QRAttendanceForm({ eventId, userId }: { eventId: string,
       transition={{ duration: 0.5 }}
       className="relative bg-gradient-to-br from-purple-800 to-indigo-900 p-8 rounded-xl shadow-2xl max-w-md mx-auto"
     >
-      <Confetti isActive={showConfetti} />
+      
       {step === 1 ? (
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-white mb-4">Receive your rewards:</h2>
@@ -91,7 +93,9 @@ export default function QRAttendanceForm({ eventId, userId }: { eventId: string,
           {message && <p className="text-red-400 text-center">{message}</p>}
         </div>
       ) : (
+        
         <div className="space-y-6">
+          <ConfettiExplosion />
           <h2 className="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
             Congratulations!
           </h2>
@@ -106,6 +110,7 @@ export default function QRAttendanceForm({ eventId, userId }: { eventId: string,
               20 ABCr Points
             </p>
             <p className="text-lg text-gray-300 mt-2">New badge unlocked!</p>
+            
           </motion.div>
           <motion.button 
             whileHover={{ scale: 1.05 }}
